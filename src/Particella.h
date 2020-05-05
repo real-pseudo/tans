@@ -3,21 +3,14 @@
 
 #include "TObject.h"
 
-class Particella : public TObject
-{
-
+class Particella : public TObject {
 public:
+	Particella() : TObject() {}
+	virtual ~Particella() {}
 
-Particella();
-
-
-virtual ~Particella();
 	int molteplicita();
-    	double theta();
+    double theta();
 	double phi();
-
-
-private:
 
 ClassDef(Particella,1)
 };

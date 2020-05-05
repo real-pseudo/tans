@@ -6,10 +6,10 @@
 ClassImp(Direzione)
 
 //________________________________________________________________________
-Direzione::Direzione():TObject(),
+Direzione::Direzione() : TObject(),
  fLabel(0.),
  fPhi(0.),
- fTheta(0.){
+ fTheta(0.) {
    // default constructor
  }
 
@@ -21,6 +21,14 @@ Direzione::Direzione(int Label,double Phi, double Theta):TObject(),
  fTheta(Theta){
 	//standard constructor 
 }	     
+
+
+Direzione::Direzione(const Direzione& source) : TObject(), 
+  fLabel(source.fLabel), 
+  fPhi(source.fPhi), 
+  fTheta(source.fTheta) {
+
+} 
 
 //___________________________________________________________________________
 Direzione::~Direzione()	 {

@@ -9,32 +9,19 @@
 
 
 
-
-
-//________________________________________________________________________
-Particella::Particella()
- {
-   // default constructor
- }
-
-//___________________________________________________________________________
-Particella::~Particella()	 {
-  // destructor
-}
-
 //___________________________________________________________________________
 //Definizione funzioni
 //funzione che serve a generare la molteplicità delle particelle
 int Particella::molteplicita(){
 	TFile F("kinem.root");
-  	TH1F *dismult = (TH1F*)F.Get("hmul");
+  	TH1F *dismult = (TH1F*) F.Get("hmul");
   	dismult->SetDirectory(0);
   	dismult->SetMinimum(0);
-	int mult=(int)(dismult->GetRandom());
+	int mult = (int) dismult->GetRandom();
 	F.Close();
 	delete dismult;
-  return mult;
-	}
+	return mult;
+}
 
 //funzione che genera gli angoli di emissione della particellla
 double Particella::theta(){
@@ -50,20 +37,20 @@ double Particella::theta(){
   	cout<<"min f: "<<hc->GetXaxis()->GetXmin()<<endl;
   	cout<<"max f: "<<hc->GetXaxis()->GetXmax()<<endl;
 	*/
-	TH1F *hc = (TH1F*)disheta->DrawClone();
+	TH1F *hc = (TH1F*) disheta->DrawClone();
 	hc->GetXaxis()->SetLimits(-1, 1);
-	double hetaval=hc->GetRandom();
-	double thetaval=2.*TMath::ATan(TMath::Exp(-hetaval));
+	double hetaval = hc->GetRandom();
+	double thetaval = 2.*TMath::ATan(TMath::Exp(-hetaval));
 	//cout<<"angolo heta: "<<thetaval<<endl;
 	F.Close();
 	delete disheta;
-  return thetaval;
-	}
+  	return thetaval;
+}
 
 //funzione che genera angolo phi
 double Particella::phi(){
 	double phival=2.*TMath::Pi()*(gRandom->Rndm());
 	//cout<<"angolo phi: "<<phival<<endl;
-  return phival;
-	}
+ 	return phival;
+}
 

@@ -22,13 +22,13 @@ hit::hit(double X, double Y, double Z): TObject(),
 }
 
 //_________________________________________________________________
-/*hit::hit(const hit &source): TObject(source),
-  fstrato(source.fstrato),
-  fraggio(source.fraggio),
-  fspessore(source.fspessore)
+hit::hit(const hit &source): TObject(source),
+  fX(source.fX),
+  fY(source.fY),
+  fZ(source.fZ)
 {
   
-}*/
+}
 
 //_________________________________________________________________
 hit::~hit() 
@@ -37,43 +37,30 @@ hit::~hit()
 
 //_________________________________________________________________
 void hit::intersezione(double x, double y, double z, Cilindro *c, Direzione *d) {
-					double c1,c2,c3;
-					c1=sin(d->GetTheta())*cos(d->GetPhi());
-					c2=sin(d->GetTheta())*sin(d->GetPhi());
-					c3=cos(d->GetTheta());
-					double t1,t2,delta;
-					delta=(x*c1+y*c2)*(x*c1+y*c2)-(c1*c1+c2*c2)*(x*x+y*y-(c->Getraggio())*(c->Getraggio()));
-					t1=(-(x*c1+y*c2)+sqrt(delta))/(c1*c1+c2*c2);
-					t2=(-(x*c1+y*c2)-sqrt(delta))/(c1*c1+c2*c2);
-					
-					if(t1>0){
-							fX=x+c1*t1;
-							fY=y+c2*t1;
-							fZ=z+c3*t1;
-					}
-					else{
-							fX=x+c1*t2;
-							fY=y+c2*t2;
-							fZ=z+c3*t2;
-					}				
+	double 	c1=sin(d->GetTheta())*cos(d->GetPhi()),
+			c2=sin(d->GetTheta())*sin(d->GetPhi()),
+			c3=cos(d->GetTheta());	
+	double add1=x*c1+y*c2, coeff=c1*c1+c2*c2;
+	double radDelta=sqrt(add1*add1-coeff*(x*x+y*y-(c->Getraggio())*(c->Getraggio())));
+	double t1=(-add1+radDelta)/coeff;
+	double t2=(-add1-radDelta)/coeff;
+
+	double t;
+	if (t1>0) 
+		t=t1; 
+	else 	
+		t=t2;
+
+	fX=x+c1*t;
+	fY=y+c2*t;
+	fZ=z+c3*t;			
 }
-void hit::PrintStatus(){
+void hit::PrintStatus() const {
 		cout<<fZ<<endl;
 	
 }
-int hit::condizione(double lunghezza){
-		int flag=0;
-		if(abs(fZ)<=lunghezza/2.){
-			
-			return flag;
-		}
-		else{
-			flag=1;
-			return flag;
-		}
-	
-	
-	
+int hit::condizione(double lunghezza) const {
+	return (abs(fZ)<=lunghezza/2); //se la condizione è vera restituisce true 
 }
 //_________________________________________________________________
 
