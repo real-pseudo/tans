@@ -21,13 +21,13 @@ public:
 
   //definizione funzioni della classe cilindro
   
-  void Setstrato(int);
-  void Setraggio(double);
-  void Setspessore(double);
+  void setLayer(int);
+  void setRadius(double);
+  void setThickness(double);
 
-  int Getstrato() const;
-  double Getraggio() const;
-  double Getspessore() const;
+  int getLayer() const;
+  double getRadius() const;
+  double getThickness() const;
   
   void PrintStatus() const; 
   

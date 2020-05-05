@@ -5,11 +5,19 @@
 #include "Cilindro.h"
 #include "Direzione.h"
 
+// Definizione di una struct (come nuovo tipo grazie a typedef di nome VTX) il mio vertice
+typedef struct {
+    Double_t X,Y,Z;
+    Int_t mult;
+} Vertex;
+
 
 class hit : public TObject {
     double fX;
     double fY;
     double fZ;
+
+    void intersezione(double X, double Y, double Z, const Cilindro *c, const Direzione *d);
 public:
 
     hit();
@@ -17,10 +25,11 @@ public:
     hit(const hit& source); 
 
     virtual ~hit();
-    void intersezione(double X, double Y, double Z, Cilindro *c, Direzione *d);
-    double GetX() const {return fX;} 
-    double GetY() const {return fY;}
-    double GetZ() const {return fZ;}
+    
+    void intersezione(const Vertex& vrx, const Cilindro& c, const Direzione& d); 
+    double getX() const {return fX;} 
+    double getY() const {return fY;}
+    double getZ() const {return fZ;}
     //double GetPhi() const {return fPhi;}
     int condizione(double) const;
     void PrintStatus() const;

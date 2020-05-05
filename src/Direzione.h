@@ -15,9 +15,9 @@ public:
 
     virtual ~Direzione();
 
-    int GetLabel() const {return fLabel;} 
-    double GetPhi() const {return fPhi;}
-    double GetTheta() const {return fTheta;}
+    int getLabel() const {return fLabel;} 
+    double getPhi() const {return fPhi;}
+    double getTheta() const {return fTheta;}
 
 ClassDef(Direzione,1)
 };

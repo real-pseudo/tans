@@ -30,31 +30,31 @@ Cilindro::~Cilindro() {
 }
 
 //__SET________________________________________________________________
-void Cilindro::Setstrato(int strato) {
+void Cilindro::setLayer(int strato) {
  	fstrato = strato;
 }
 
-void Cilindro::Setraggio(double raggio) {
+void Cilindro::setRadius(double raggio) {
   fraggio = raggio;
 }
 
-void Cilindro::Setspessore(double spessore) {
+void Cilindro::setThickness(double spessore) {
   fspessore = spessore;
 }
 
 
 //_________________________________________________________________
-int Cilindro::Getstrato() const {
+int Cilindro::getLayer() const {
   return fstrato;
 }
 
 //_________________________________________________________________
-double Cilindro::Getraggio() const {
+double Cilindro::getRadius() const {
   return fraggio;
 }
 
 //_________________________________________________________________
-double Cilindro::Getspessore() const {
+double Cilindro::getThickness() const {
   return fspessore;
 }
 

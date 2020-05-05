@@ -35,13 +35,17 @@ hit::~hit()
 {
 }
 
+void hit::intersezione(const Vertex& vrx, const Cilindro& c, const Direzione& d) {
+	intersezione(vrx.X, vrx.Y, vrx.Z, &c, &d); 			
+}
+
 //_________________________________________________________________
-void hit::intersezione(double x, double y, double z, Cilindro *c, Direzione *d) {
-	double 	c1=sin(d->GetTheta())*cos(d->GetPhi()),
-			c2=sin(d->GetTheta())*sin(d->GetPhi()),
-			c3=cos(d->GetTheta());	
+void hit::intersezione(double x, double y, double z, const Cilindro *c, const Direzione *d) {
+	double 	c1=sin(d->getTheta())*cos(d->getPhi()),
+			c2=sin(d->getTheta())*sin(d->getPhi()),
+			c3=cos(d->getTheta());	
 	double add1=x*c1+y*c2, coeff=c1*c1+c2*c2;
-	double radDelta=sqrt(add1*add1-coeff*(x*x+y*y-(c->Getraggio())*(c->Getraggio())));
+	double radDelta=sqrt(add1*add1-coeff*(x*x+y*y-(c->getRadius())*(c->getRadius())));
 	double t1=(-add1+radDelta)/coeff;
 	double t2=(-add1-radDelta)/coeff;
 
