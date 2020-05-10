@@ -16,7 +16,7 @@
 #define ARRAY_SIZE 100 
 #define NUMBER_OF_EVENTS 100 
 
-
+//prova commento
 void GeneraTree() {
 	static Vertex point;
 
