@@ -63,7 +63,12 @@ void hit::PrintStatus() const {
 		cout<<fZ<<endl;
 	
 }
-int hit::condizione(double lunghezza) const {
+void hit::cylindrical(const Cilindro c, double phi, double z){
+	fX=c.getRadius()*cos(phi);
+	fY=c.getRadius()*sin(phi);
+	fZ=z;
+}
+bool hit::accettanza(double lunghezza) const {
 	return (abs(fZ)<=lunghezza/2); //se la condizione è vera restituisce true 
 }
 //_________________________________________________________________

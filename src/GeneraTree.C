@@ -14,7 +14,7 @@
 #include "hit.h"
 
 #define ARRAY_SIZE 100 
-#define NUMBER_OF_EVENTS 100 
+#define NUMBER_OF_EVENTS 100
 
 //prova commento
 void GeneraTree() {
@@ -28,6 +28,9 @@ void GeneraTree() {
 			 riv1(1, 4, 0.02), 
 			 riv2(2, 7, 0.02); 
 	Particella p;
+	double smear_z=0.00012;//120micrometri in cm
+	double smear_phi=0.003;
+	double Z_smear1,Z_smear2,phi_smear1,phi_smear2;
 //	Particella *p = new Particella();
 
   	// Apertura del file di output
@@ -85,19 +88,37 @@ void GeneraTree() {
 
 			hits1.PrintStatus();
 			
-			if(hits1.condizione(lunghezza)){
+			if(hits1.accettanza(lunghezza)){
 				//cout<<"ok"<<endl;
 			//	new(HIT1[a]) hit(hits1.GetX(), hits1.GetY(), hits1.GetZ());
+				Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
+				while(abs(Z_smear1)>=lunghezza/2.){
+					Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
+					}
+				phi_smear1=gRandom->Gaus(hits1.get_Phi(),smear_phi);
 
-				new(HIT1[a]) hit(hits1); //costruttore di copia 
+				hits1.cylindrical(riv1,phi_smear1,Z_smear1);
+
+				new(HIT1[a]) hit(hits1) ; //costruttore di copia
 				a++;
+
 				
 			}
-			if(hits2.condizione(lunghezza)){
+			if(hits2.accettanza(lunghezza)){
 				//cout<<"ok!!!!!!!!"<<endl;
 				
 			//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.GetZ());
-				new(HIT2[b]) hit(hits2); 
+				Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
+				while(abs(Z_smear2)>=lunghezza/2.){
+						Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
+						}
+				phi_smear2=gRandom->Gaus(hits2.get_Phi(),smear_phi);
+
+							//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.getZ());
+							//new(HIT2[b]) hit(hits2);
+				hits2.cylindrical(riv2,phi_smear2,Z_smear2);
+
+				new(HIT2[b])hit(hits2);
 				b++;
 				
 			}
