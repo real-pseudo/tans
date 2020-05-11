@@ -12,6 +12,7 @@
 #include "Cilindro.h"
 #include "Particella.h"
 #include "hit.h"
+#include "Utility.h"
 
 #define ARRAY_SIZE 100 
 #define NUMBER_OF_EVENTS 100
@@ -44,16 +45,15 @@ void GeneraTree() {
 	//Dati di partenza 
 	double lunghezza = 27;
 	hit hits1(0, 0, 0), 
-		hits2(0,0, 0);
+		hits2(0, 0, 0);
 	Cilindro beampipe(0, 3, 0.08), 
 			 det1(1, 4, 0.02), 
 			 det2(2, 7, 0.02); 
-	Particella p;
-	
+
 	double smear_z=0.00012;//120micrometri in cm
 	double smear_phi=0.003;
 	double Z_smear1,Z_smear2,phi_smear1,phi_smear2;
-//	Particella *p = new Particella();
+
 
 
   	// Apertura del file di output
@@ -65,7 +65,7 @@ void GeneraTree() {
 	
   	TTree *tree = new TTree("T", ("TTree con " + n + " branches").c_str()); //puntatore ad un oggetto ttree
 
-	ClonesArray directions("Direzione", ARRAY_SIZE); 
+	ClonesArray particles("Particella", ARRAY_SIZE); 
 	ClonesArray hit_det1("hit", ARRAY_SIZE);
 	ClonesArray hit_det2("hit", ARRAY_SIZE);
 
@@ -76,24 +76,10 @@ void GeneraTree() {
 		scatter_bp = new ClonesArray("Direzione", ARRAY_SIZE);
 	}
 
-	
-	
-	/*
-  	TClonesArray *ptrdirez = new TClonesArray("Direzione", ARRAY_SIZE); //vettore di classi
-  	TClonesArray& direz = *ptrdirez; //direz è un puntatore ad oggetti della classe Tclones array è una copia di ptrdirez
- 	TClonesArray *ptrHIT1 = new TClonesArray("hit", ARRAY_SIZE);
-  	TClonesArray& HIT1 = *ptrHIT1;
-  	TClonesArray *ptrHIT2 = new TClonesArray("hit", ARRAY_SIZE);
-  	TClonesArray& HIT2 = *ptrHIT2;
-	*/
-
-
-	
-     
 	 
   	// Dichiarazione dei branch del TTree
 	tree->Branch("VertMult", &point.X, "X/D:Y:Z:mult/I");
-	tree->Branch("Direzione", &directions.ptr);
+	tree->Branch("Particella", &particles.ptr);
 	tree->Branch("hit1", &hit_det1.ptr);
 	tree->Branch("hit2", &hit_det2.ptr);
 	if(multScattering){
@@ -110,7 +96,7 @@ void GeneraTree() {
     //   cout<<i<<"__ "<<numpart<<endl;
     // }
 
-		point.mult = p.molteplicita();
+		point.mult = getMultiplicity();
 		point.X = gRandom->Gaus(0, 0.01);
 		point.Y = gRandom->Gaus(0, 0.01);
 		point.Z = gRandom->Gaus(0, 5.3);
@@ -121,50 +107,47 @@ void GeneraTree() {
 
 		//loop su ogni evento
 		for(int j = 0; j < point.mult; j++) {
-			Direzione& tst = *(new(directions.array[j]) Direzione(j, p.phi(), p.theta()));  
-			//Direzione& tst = *(new Direzione(j, p.phi(), p.theta()));
-			//Direzione *tst = (Direzione*) ptrdirez->At(j); 
-			cout << "Direzione # " << tst.getLabel() 
-				 << ": phi = " << tst.getPhi()
-				 << ", theta = " << tst.getTheta() << endl; 
+			Particella& particle = *(new(particles.array[j]) Particella(j));  
+			cout << "\nDirezione # " << particle.getLabel() 
+				 << ": phi = " << particle.getPhi()
+				 << ": theta = " << particle.getTheta() << endl; 
 			
 				 
-			hits1.intersezione(point, det1, tst); 
-			hits2.intersezione(point, det2, tst); 
-			//hits1.intersezione(point.X, point.Y, point.Z, &riv1, tst);
-			//hits2.intersezione(point.X, point.Y, point.Z, &riv2, tst);
+			hits1.intersezione(point, det1, particle); 
+			hits2.intersezione(point, det2, particle); 
 
+			
 			hits1.PrintStatus();
-		
+			hits2.PrintStatus();
+
+			particle.scattering();
+			
+			hit real_hit1(hits1);
 			if(hits1.accettanza(lunghezza)){
-				//cout<<"ok"<<endl;
-			//	new(HIT1[a]) hit(hits1.GetX(), hits1.GetY(), hits1.GetZ());
 				Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
 				while(abs(Z_smear1)>=lunghezza/2.){
 					Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
-					}
-				phi_smear1=gRandom->Gaus(hits1.get_Phi(),smear_phi);
+				}
+				phi_smear1=gRandom->Gaus(hits1.getPhi(),smear_phi);
 
-				hits1.cylindrical(det1,phi_smear1,Z_smear1);
+				hits1.cartesian(det1,phi_smear1,Z_smear1);
 
 				new(hit_det1.array[count_hit1]) hit(hits1) ; //costruttore di copia
 				count_hit1++;
-
 				
 			}
+			cout << "phi smerdo: "<<phi_smear1 << " phi: " <<particle.getPhi()<<endl;
+			
+			
+			
 			if(hits2.accettanza(lunghezza)){
-				//cout<<"ok!!!!!!!!"<<endl;
-				
-			//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.GetZ());
 				Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
 				while(abs(Z_smear2)>=lunghezza/2.){
-						Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
-						}
-				phi_smear2=gRandom->Gaus(hits2.get_Phi(),smear_phi);
+					Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
+				}
+				phi_smear2=gRandom->Gaus(hits2.getPhi(),smear_phi);
 
-							//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.getZ());
-							//new(HIT2[b]) hit(hits2);
-				hits2.cylindrical(det2, phi_smear2,Z_smear2);
+				hits2.cartesian(det2, phi_smear2,Z_smear2);
 
 				new(hit_det2.array[count_hit2])hit(hits2);
 				count_hit2++;	
@@ -173,7 +156,7 @@ void GeneraTree() {
 
 		tree->Fill();
 
-		directions.clear(); 
+		particles.clear(); 
 		hit_det1.clear(); 
 		hit_det2.clear(); 
 	}

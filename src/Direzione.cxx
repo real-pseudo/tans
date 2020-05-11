@@ -33,7 +33,8 @@ Direzione::Direzione(const Direzione& source) : TObject(),
 Direzione::~Direzione()	 {
 }
 
-void Direzione::rotation(const Particella& particle, const Cilindro& angle){
+/**Generazione della nuova direzione in seguito al multiple scattering */
+void Direzione::scattering(const Particella& particle, const Cilindro& angle){
     double cd[3] = {0, 0, 0}; //componenti nuova direzione 
 
     double sphi = TMath::Sin(fPhi), cphi = TMath::Cos(fPhi);
@@ -41,8 +42,9 @@ void Direzione::rotation(const Particella& particle, const Cilindro& angle){
 
     double phi_0 = 2.*TMath::Pi()*(gRandom->Rndm());
     double sphi_0 = TMath::Sin(phi_0), cphi_0 = TMath::Cos(phi_0);
-    double stheta_0 = 1, ctheta_0 = 1;
-   // double stheta_0 = TMath::Sin(angle.mult_scat()), ctheta_0 = TMath::Cos(angle.mult_scat());
+
+    double theta_0 = TMath::Abs(gRandom->Gaus(0.,0.001)) //angolo di scattering con rms 1 mrad
+    double stheta_0 = TMath::Sin(theta_0), ctheta_0 = TMath::Cos(phi_0);;
     
     //matrice di rotazione
     double m_rot[3][3] = {

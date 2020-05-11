@@ -6,7 +6,7 @@
 void loader() {   
     std::vector<std::string> files {
         "Cilindro.cxx", 
-        "Direzione.cxx", 
+        "Utility.cxx",
         "hit.cxx", 
         "Particella.cxx"
     };

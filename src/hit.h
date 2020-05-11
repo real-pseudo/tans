@@ -3,9 +3,10 @@
 
 #include "TObject.h"
 #include "Cilindro.h"
-#include "Direzione.h"
+#include "Particella.h"
 
-// Definizione di una struct (come nuovo tipo grazie a typedef di nome VTX) il mio vertice
+
+// Definizione di una struct per il vertice
 typedef struct {
     Double_t X,Y,Z;
     Int_t mult;
@@ -17,7 +18,7 @@ class hit : public TObject {
     double fY;
     double fZ;
 
-    void intersezione(double X, double Y, double Z, const Cilindro *c, const Direzione *d);
+
 public:
 
     hit();
@@ -26,18 +27,18 @@ public:
 
     virtual ~hit();
     
-    void intersezione(const Vertex& vrx, const Cilindro& c, const Direzione& d); 
+    void intersezione(const Vertex& vrx, const Cilindro& c, const Particella& particle); 
     double getX() const {return fX;} 
     double getY() const {return fY;}
     double getZ() const {return fZ;}
 
-    double get_Phi() const {return atan2(fY,fX);}
+    double getPhi() const {return atan2(fY,fX);}
     bool accettanza(double) const;
-    void cylindrical( const Cilindro c,double phi, double z);
+    void cartesian( const Cilindro& c,double phi, double z);
 
     void PrintStatus() const;
 
-    Direzione* rotate() const;
+   
 
 ClassDef(hit,1)
 };

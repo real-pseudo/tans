@@ -2,8 +2,8 @@
 #include "hit.h"
 #include "TString.h"
 #include "TMath.h"
-#include "Cilindro.h"
-#include "Direzione.h"
+
+
 ClassImp(hit)
 //_________________________________________________________________
 hit::hit(): TObject(),
@@ -35,17 +35,14 @@ hit::~hit()
 {
 }
 
-void hit::intersezione(const Vertex& vrx, const Cilindro& c, const Direzione& d) {
-	intersezione(vrx.X, vrx.Y, vrx.Z, &c, &d); 			
-}
-
-//_________________________________________________________________
-void hit::intersezione(double x, double y, double z, const Cilindro *c, const Direzione *d) {
-	double 	c1=sin(d->getTheta())*cos(d->getPhi()),
-			c2=sin(d->getTheta())*sin(d->getPhi()),
-			c3=cos(d->getTheta());	
+void hit::intersezione(const Vertex& vrx, const Cilindro& c, const Particella& particle) {
+	//intersezione(vrx.X, vrx.Y, vrx.Z, &c, &direction); 			
+	double x = vrx.X, y = vrx.Y, z =vrx.Z;
+	double 	c1=sin(particle.getTheta())*cos(particle.getPhi()),
+			c2=sin(particle.getTheta())*sin(particle.getPhi()),
+			c3=cos(particle.getTheta());	
 	double add=x*c1+y*c2, coeff=c1*c1+c2*c2;
-	double radDelta=sqrt(add*add-coeff*(x*x+y*y-(c->getRadius())*(c->getRadius())));
+	double radDelta=sqrt(add*add-coeff*(x*x+y*y-(c.getRadius())*(c.getRadius())));
 	double t1=(-add+radDelta)/coeff;
 	double t2=(-add-radDelta)/coeff;
 
@@ -71,7 +68,7 @@ bool hit::accettanza(double lunghezza) const {
 	return (abs(fZ)<=lunghezza/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True
 }
 
-void hit::cylindrical(const Cilindro c, double phi, double z){
+void hit::cartesian(const Cilindro& c, double phi, double z){
 	fX=c.getRadius()*cos(phi);
 	fY=c.getRadius()*sin(phi);
 	fZ=z;
