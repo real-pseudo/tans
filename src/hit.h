@@ -31,8 +31,10 @@ public:
     double getY() const {return fY;}
     double getZ() const {return fZ;}
     //double GetPhi() const {return fPhi;}
-    int condizione(double) const;
+    bool accettanza(double) const;
     void PrintStatus() const;
+
+    Direzione* rotate() const 
 
 ClassDef(hit,1)
 };

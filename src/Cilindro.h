@@ -29,8 +29,8 @@ public:
   double getRadius() const;
   double getThickness() const;
   
-  void PrintStatus() const; 
-  
+  void printStatus() const; 
+  //double mult_scat() const;
           
   ClassDef(Cilindro,1) 
 };

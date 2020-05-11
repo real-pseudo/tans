@@ -44,10 +44,10 @@ void hit::intersezione(double x, double y, double z, const Cilindro *c, const Di
 	double 	c1=sin(d->getTheta())*cos(d->getPhi()),
 			c2=sin(d->getTheta())*sin(d->getPhi()),
 			c3=cos(d->getTheta());	
-	double add1=x*c1+y*c2, coeff=c1*c1+c2*c2;
-	double radDelta=sqrt(add1*add1-coeff*(x*x+y*y-(c->getRadius())*(c->getRadius())));
-	double t1=(-add1+radDelta)/coeff;
-	double t2=(-add1-radDelta)/coeff;
+	double add=x*c1+y*c2, coeff=c1*c1+c2*c2;
+	double radDelta=sqrt(add*add-coeff*(x*x+y*y-(c->getRadius())*(c->getRadius())));
+	double t1=(-add+radDelta)/coeff;
+	double t2=(-add-radDelta)/coeff;
 
 	double t;
 	if (t1>0) 
@@ -59,12 +59,16 @@ void hit::intersezione(double x, double y, double z, const Cilindro *c, const Di
 	fY=y+c2*t;
 	fZ=z+c3*t;			
 }
+
+
+
 void hit::PrintStatus() const {
 		cout<<fZ<<endl;
 	
 }
-int hit::condizione(double lunghezza) const {
-	return (abs(fZ)<=lunghezza/2); //se la condizione è vera restituisce true 
+bool hit::accettanza(double lunghezza) const {
+	return (abs(fZ)<=lunghezza/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True
+
 }
 //_________________________________________________________________
 

@@ -17,7 +17,27 @@
 #define NUMBER_OF_EVENTS 100 
 
 
+class ClonesArray {
+public:
+	TClonesArray* ptr = nullptr; 
+	TClonesArray& array;
+
+	ClonesArray(const std::string& classname, unsigned size) :
+		ptr(new TClonesArray(classname.c_str(), size)), 
+		array(*ptr) {
+	}
+
+	~ClonesArray() {
+		delete ptr;
+	}
+
+	void clear() {
+		array.Clear(); 
+	}
+}; 
+
 void GeneraTree() {
+	bool multScattering = true;
 	static Vertex point;
 
 	//Dati di partenza 
@@ -25,32 +45,55 @@ void GeneraTree() {
 	hit hits1(0, 0, 0), 
 		hits2(0,0, 0);
 	Cilindro beampipe(0, 3, 0.08), 
-			 riv1(1, 4, 0.02), 
-			 riv2(2, 7, 0.02); 
+			 det1(1, 4, 0.02), 
+			 det2(2, 7, 0.02); 
 	Particella p;
-//	Particella *p = new Particella();
 
   	// Apertura del file di output
   	TFile hfile("htree.root","RECREATE");
   	// dichiarazione del TTree
-  	TTree *tree = new TTree("T","TTree con 4 branches"); //puntatore ad un oggetto ttree
-    // se invertissi l'ordine dovrei scrivere
-    // tree->SetDirectory(&hfile);
+	std::string n = "4"; //numero branches del TTree
+	if(multScattering) 
+		n = "6"; 
+	
+  	TTree *tree = new TTree("T", ("TTree con " + n + " branches").c_str()); //puntatore ad un oggetto ttree
 
+	ClonesArray directions("Direzione", ARRAY_SIZE); 
+	ClonesArray hit_det1("hit", ARRAY_SIZE);
+	ClonesArray hit_det2("hit", ARRAY_SIZE);
+
+	ClonesArray *scatter_det1 = nullptr, *scatter_bp = nullptr;
+	
+	if(multScattering){
+		scatter_det1 = new ClonesArray("Direzione", ARRAY_SIZE);
+		scatter_bp = new ClonesArray("Direzione", ARRAY_SIZE);
+	}
+
+	
+	
+	/*
   	TClonesArray *ptrdirez = new TClonesArray("Direzione", ARRAY_SIZE); //vettore di classi
   	TClonesArray& direz = *ptrdirez; //direz è un puntatore ad oggetti della classe Tclones array è una copia di ptrdirez
  	TClonesArray *ptrHIT1 = new TClonesArray("hit", ARRAY_SIZE);
   	TClonesArray& HIT1 = *ptrHIT1;
   	TClonesArray *ptrHIT2 = new TClonesArray("hit", ARRAY_SIZE);
   	TClonesArray& HIT2 = *ptrHIT2;
+	*/
+
+
+	
      
 	 
   	// Dichiarazione dei branch del TTree
 	tree->Branch("VertMult", &point.X, "X/D:Y:Z:mult/I");
-	tree->Branch("Direzione", &ptrdirez);
-	tree->Branch("hit1", &ptrHIT1);
-	tree->Branch("hit2", &ptrHIT2);
-	
+	tree->Branch("Direzione", &directions.ptr);
+	tree->Branch("hit1", &hit_det1.ptr);
+	tree->Branch("hit2", &hit_det2.ptr);
+	if(multScattering){
+		tree->Branch("scattering_bp", &scatter_bp->ptr);
+		tree->Branch("scattering_det1", &scatter_det1->ptr);
+	}
+
 	for(Int_t i = 0; i < NUMBER_OF_EVENTS; i++) { // loop sugli eventi
 	
     // Genero una molteplicita di particelle e un vertice vtx point con coordinate.
@@ -67,58 +110,55 @@ void GeneraTree() {
 
 		cout << "Evento #" << i << "----" << 
 				"molteplicità = " << point.mult << endl;
-		int a = 0, b = 0;
+		int count_hit1 = 0, count_hit2 = 0;
 
 		//loop su ogni evento
 		for(int j = 0; j < point.mult; j++) {
-			Direzione& tst = *(new(direz[j]) Direzione(j, p.phi(), p.theta())); 
+			Direzione& tst = *(new(directions.array[j]) Direzione(j, p.phi(), p.theta()));  
+			//Direzione& tst = *(new Direzione(j, p.phi(), p.theta()));
 			//Direzione *tst = (Direzione*) ptrdirez->At(j); 
 			cout << "Direzione # " << tst.getLabel() 
 				 << ": phi = " << tst.getPhi()
 				 << ", theta = " << tst.getTheta() << endl; 
+			
 				 
-			//per ogni particella devo controllare la condizione su z
-			hits1.intersezione(point, riv1, tst); 
-			hits2.intersezione(point, riv2, tst); 
+			hits1.intersezione(point, det1, tst); 
+			hits2.intersezione(point, det2, tst); 
 			//hits1.intersezione(point.X, point.Y, point.Z, &riv1, tst);
 			//hits2.intersezione(point.X, point.Y, point.Z, &riv2, tst);
 
 			hits1.PrintStatus();
 			
-			if(hits1.condizione(lunghezza)){
-				//cout<<"ok"<<endl;
+			if(hits1.accettanza(lunghezza)){ //per ogni particella devo controllare la condizione su z
 			//	new(HIT1[a]) hit(hits1.GetX(), hits1.GetY(), hits1.GetZ());
-
-				new(HIT1[a]) hit(hits1); //costruttore di copia 
-				a++;
+				new(hit_det1.array[count_hit1]) hit(hits1); //costruttore di copia 
+				count_hit1++;
 				
 			}
-			if(hits2.condizione(lunghezza)){
-				//cout<<"ok!!!!!!!!"<<endl;
-				
-			//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.GetZ());
-				new(HIT2[b]) hit(hits2); 
-				b++;
+			if(hits2.accettanza(lunghezza)){
+				new(hit_det2.array[count_hit2]) hit(hits2); 
+				count_hit2++;
 				
 			}
 		}
-		
-	
 
 		tree->Fill();
-		ptrdirez->Clear();
-		ptrHIT1->Clear();
-        ptrHIT2->Clear();
 
-  }
+		directions.clear(); 
+		hit_det1.clear(); 
+		hit_det2.clear(); 
+	}
 
-  // Save all objects in this file
-  hfile.Write();
+	// Save all objects in this file
+	hfile.Write();
 
-  // Close the file. 
-  hfile.Close();
+	// Close the file. 
+	hfile.Close();
 
-
+	if(multScattering) {
+		delete scatter_bp;
+		delete scatter_det1;
+	} 
 }
 
 

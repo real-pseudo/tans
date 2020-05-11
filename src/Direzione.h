@@ -18,6 +18,7 @@ public:
     int getLabel() const {return fLabel;} 
     double getPhi() const {return fPhi;}
     double getTheta() const {return fTheta;}
+    void rotation(const Particella& particle, const Cilindro& layer);
 
 ClassDef(Direzione,1)
 };

@@ -35,31 +35,31 @@ void Cilindro::setLayer(int strato) {
 }
 
 void Cilindro::setRadius(double raggio) {
-  fraggio = raggio;
+    fraggio = raggio;
 }
 
 void Cilindro::setThickness(double spessore) {
-  fspessore = spessore;
+    fspessore = spessore;
 }
 
 
 //_________________________________________________________________
 int Cilindro::getLayer() const {
-  return fstrato;
+    return fstrato;
 }
 
 //_________________________________________________________________
 double Cilindro::getRadius() const {
-  return fraggio;
+    return fraggio;
 }
 
 //_________________________________________________________________
 double Cilindro::getThickness() const {
-  return fspessore;
+    return fspessore;
 }
 
 //_________________________________________________________________
-void Cilindro::PrintStatus() const {
+void Cilindro::printStatus() const {
   // printout
   cout<<"\n Funzione PrintStatus di Cilindro\n";
   cout<<"======================================================\n";
@@ -84,10 +84,26 @@ void Cilindro::PrintStatus() const {
 
 
   }
-		
+  // inutile???
+/*
+double Cilindro::mult_scat(double p) const {
+    double theta0 = 0, X_0 = 0;
+    switch (fstrato) {
+        case 0:
+            X_0 = 65.19; //lunghezza di radiazione Be
+            break;
 
+        case 1:
+            X_0 = 21.82; //lunghezza di radiazione Si          
+            break;
+    }
 
-}
+    if(X_0) //Calcola theta_0 solo per i primi due strati
+        theta0 = ((13.6/p) * (TMath::Sqrt(fspessore/X_0)) * (1 + 0.038*TMath::Log(fspessore/X_0)));
+
+    return theta0; 
+
+} */
 
 //_________________________________________________________________
   /*void Cilindro::SetArray(int *vt, int sz){

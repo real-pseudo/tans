@@ -29,14 +29,7 @@ double Particella::theta(){
 	TH1F *disheta = (TH1F*)F.Get("heta");
   	disheta->SetDirectory(0);
   	disheta->SetMinimum(0);
-	/*
-	TH1F *hc = (TH1F*)disheta->DrawClone();
-  	cout<<"min i: "<<hc->GetXaxis()->GetXmin()<<endl;
-  	cout<<"max i: "<<hc->GetXaxis()->GetXmax()<<endl;
-  	hc->GetXaxis()->SetLimits(-1, 1);
-  	cout<<"min f: "<<hc->GetXaxis()->GetXmin()<<endl;
-  	cout<<"max f: "<<hc->GetXaxis()->GetXmax()<<endl;
-	*/
+	
 	TH1F *hc = (TH1F*) disheta->DrawClone();
 	hc->GetXaxis()->SetLimits(-1, 1);
 	double hetaval = hc->GetRandom();
