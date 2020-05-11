@@ -1,5 +1,6 @@
 #include <Riostream.h>
 #include "TObject.h"
+#include "TRandom3.h"
 #include "TMath.h"
 #include "Direzione.h"
 
@@ -40,7 +41,8 @@ void Direzione::rotation(const Particella& particle, const Cilindro& angle){
 
     double phi_0 = 2.*TMath::Pi()*(gRandom->Rndm());
     double sphi_0 = TMath::Sin(phi_0), cphi_0 = TMath::Cos(phi_0);
-    double stheta_0 = TMath::Sin(angle.mult_scat()), ctheta_0 = TMath::Cos(angle.mult_scat());
+    double stheta_0 = 1, ctheta_0 = 1;
+   // double stheta_0 = TMath::Sin(angle.mult_scat()), ctheta_0 = TMath::Cos(angle.mult_scat());
     
     //matrice di rotazione
     double m_rot[3][3] = {

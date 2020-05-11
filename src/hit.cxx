@@ -66,9 +66,15 @@ void hit::PrintStatus() const {
 		cout<<fZ<<endl;
 	
 }
+
 bool hit::accettanza(double lunghezza) const {
 	return (abs(fZ)<=lunghezza/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True
+}
 
+void hit::cylindrical(const Cilindro c, double phi, double z){
+	fX=c.getRadius()*cos(phi);
+	fY=c.getRadius()*sin(phi);
+	fZ=z;
 }
 //_________________________________________________________________
 

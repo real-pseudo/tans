@@ -14,7 +14,7 @@
 #include "hit.h"
 
 #define ARRAY_SIZE 100 
-#define NUMBER_OF_EVENTS 100 
+#define NUMBER_OF_EVENTS 100
 
 
 class ClonesArray {
@@ -36,6 +36,7 @@ public:
 	}
 }; 
 
+
 void GeneraTree() {
 	bool multScattering = true;
 	static Vertex point;
@@ -48,6 +49,12 @@ void GeneraTree() {
 			 det1(1, 4, 0.02), 
 			 det2(2, 7, 0.02); 
 	Particella p;
+	
+	double smear_z=0.00012;//120micrometri in cm
+	double smear_phi=0.003;
+	double Z_smear1,Z_smear2,phi_smear1,phi_smear2;
+//	Particella *p = new Particella();
+
 
   	// Apertura del file di output
   	TFile hfile("htree.root","RECREATE");
@@ -128,17 +135,39 @@ void GeneraTree() {
 			//hits2.intersezione(point.X, point.Y, point.Z, &riv2, tst);
 
 			hits1.PrintStatus();
-			
-			if(hits1.accettanza(lunghezza)){ //per ogni particella devo controllare la condizione su z
+		
+			if(hits1.accettanza(lunghezza)){
+				//cout<<"ok"<<endl;
 			//	new(HIT1[a]) hit(hits1.GetX(), hits1.GetY(), hits1.GetZ());
-				new(hit_det1.array[count_hit1]) hit(hits1); //costruttore di copia 
+				Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
+				while(abs(Z_smear1)>=lunghezza/2.){
+					Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
+					}
+				phi_smear1=gRandom->Gaus(hits1.get_Phi(),smear_phi);
+
+				hits1.cylindrical(det1,phi_smear1,Z_smear1);
+
+				new(hit_det1.array[count_hit1]) hit(hits1) ; //costruttore di copia
 				count_hit1++;
+
 				
 			}
 			if(hits2.accettanza(lunghezza)){
-				new(hit_det2.array[count_hit2]) hit(hits2); 
-				count_hit2++;
+				//cout<<"ok!!!!!!!!"<<endl;
 				
+			//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.GetZ());
+				Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
+				while(abs(Z_smear2)>=lunghezza/2.){
+						Z_smear2=gRandom->Gaus(hits2.getZ(),smear_z);
+						}
+				phi_smear2=gRandom->Gaus(hits2.get_Phi(),smear_phi);
+
+							//	new(HIT2[b]) hit(hits2.GetX(), hits2.GetY(), hits2.getZ());
+							//new(HIT2[b]) hit(hits2);
+				hits2.cylindrical(det2, phi_smear2,Z_smear2);
+
+				new(hit_det2.array[count_hit2])hit(hits2);
+				count_hit2++;	
 			}
 		}
 

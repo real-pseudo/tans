@@ -30,11 +30,14 @@ public:
     double getX() const {return fX;} 
     double getY() const {return fY;}
     double getZ() const {return fZ;}
-    //double GetPhi() const {return fPhi;}
+
+    double get_Phi() const {return atan2(fY,fX);}
     bool accettanza(double) const;
+    void cylindrical( const Cilindro c,double phi, double z);
+
     void PrintStatus() const;
 
-    Direzione* rotate() const 
+    Direzione* rotate() const;
 
 ClassDef(hit,1)
 };

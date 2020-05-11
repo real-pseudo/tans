@@ -79,11 +79,12 @@ void Cilindro::printStatus() const {
           break;
 
     default:
-      printf("hai inserito una scelta non valida \n");
+      cout << "hai inserito una scelta non valida" << endl ;
       break;			
 
 
   }
+}
   // inutile???
 /*
 double Cilindro::mult_scat(double p) const {

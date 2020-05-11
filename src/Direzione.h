@@ -2,6 +2,8 @@
 #define DIREZIONE_H
 
 #include "TObject.h"
+#include "Particella.h"
+#include "Cilindro.h"
 
 class Direzione : public TObject {
     int fLabel;
