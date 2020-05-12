@@ -58,11 +58,12 @@ void hit::intersezione(const Vertex& vrx, const Cilindro& c, const Particella& p
 }
 
 
-
 void hit::PrintStatus() const {
 		cout<<fZ<<endl;
 	
 }
+
+
 
 bool hit::accettanza(double lunghezza) const {
 	return (abs(fZ)<=lunghezza/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True

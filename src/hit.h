@@ -10,7 +10,8 @@
 typedef struct {
     Double_t X,Y,Z;
     Int_t mult;
-} Vertex;
+    }
+    Vertex;
 
 
 class hit : public TObject {

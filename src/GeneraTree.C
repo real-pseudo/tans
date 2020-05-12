@@ -41,11 +41,13 @@ public:
 void GeneraTree() {
 	bool multScattering = true;
 	static Vertex point;
+	Vertex vtx_hit;
 
 	//Dati di partenza 
 	double lunghezza = 27;
 	hit hits1(0, 0, 0), 
-		hits2(0, 0, 0);
+		hits2(0, 0, 0),
+		hitBP(0, 0, 0);
 	Cilindro beampipe(0, 3, 0.08), 
 			 det1(1, 4, 0.02), 
 			 det2(2, 7, 0.02); 
@@ -88,18 +90,13 @@ void GeneraTree() {
 	}
 
 	for(Int_t i = 0; i < NUMBER_OF_EVENTS; i++) { // loop sugli eventi
-	
-    // Genero una molteplicita di particelle e un vertice vtx point con coordinate.
-    // Int_t numpart=0; //la condizione serve perchè se viene zero non è una moltepicità di particelle
-    // while(numpart<=0){
-	//    numpart=(Int_t)(dismult->GetRandom());	//molteplicita di particelle generate a partire dalla distribuzione fornita
-    //   cout<<i<<"__ "<<numpart<<endl;
-    // }
 
 		point.mult = getMultiplicity();
 		point.X = gRandom->Gaus(0, 0.01);
 		point.Y = gRandom->Gaus(0, 0.01);
 		point.Z = gRandom->Gaus(0, 5.3);
+
+		
 
 		cout << "Evento #" << i << "----" << 
 				"molteplicità = " << point.mult << endl;
@@ -107,22 +104,42 @@ void GeneraTree() {
 
 		//loop su ogni evento
 		for(int j = 0; j < point.mult; j++) {
-			Particella& particle = *(new(particles.array[j]) Particella(j));  
+				vtx_hit = point;
+				Particella& particle = *(new(particles.array[j]) Particella(j));  
 			cout << "\nDirezione # " << particle.getLabel() 
 				 << ": phi = " << particle.getPhi()
 				 << ": theta = " << particle.getTheta() << endl; 
 			
-				 
-			hits1.intersezione(point, det1, particle); 
-			hits2.intersezione(point, det2, particle); 
+			if(multScattering){
+				hitBP.intersezione(vtx_hit, beampipe, particle);
+				particle.scattering();// deviazione particella
+				vtx_hit.X = hitBP.getX(); 
+				vtx_hit.Y = hitBP.getY();
+				vtx_hit.Z = hitBP.getZ();
+				//MANCA ACCETTANZA E RIEMPIMENTO ISTOGRAMMI
+				}
+			cout <<"Z beam pipe:"<<vtx_hit.Z <<endl;
+			cout << ": phi = " << particle.getPhi()
+				 << ": theta = " << particle.getTheta() << endl; 
 
-			
+			hits1.intersezione(vtx_hit, det1, particle);
+			if(multScattering){
+				particle.scattering();
+				vtx_hit.X = hits1.getX();
+				vtx_hit.Y = hits1.getY();
+				vtx_hit.Z = hits1.getZ();
+				//MANCA ACCETTANZA E RIEMPIMENTO ISTOGRAMMI
+				}
+			cout <<"Z1:"<<endl;
 			hits1.PrintStatus();
+			cout << ": phi = " << particle.getPhi()
+				 << ": theta = " << particle.getTheta() << endl;
+				
+			hits2.intersezione(vtx_hit, det2, particle); 
+			cout <<"Z2:" <<endl;
 			hits2.PrintStatus();
-
-			particle.scattering();
 			
-			hit real_hit1(hits1);
+
 			if(hits1.accettanza(lunghezza)){
 				Z_smear1=gRandom->Gaus(hits1.getZ(),smear_z);
 				while(abs(Z_smear1)>=lunghezza/2.){
@@ -136,7 +153,8 @@ void GeneraTree() {
 				count_hit1++;
 				
 			}
-			cout << "phi smerdo: "<<phi_smear1 << " phi: " <<particle.getPhi()<<endl;
+			cout << "Z smearing 1: "<<endl;
+			hits1.PrintStatus();
 			
 			
 			
@@ -152,6 +170,8 @@ void GeneraTree() {
 				new(hit_det2.array[count_hit2])hit(hits2);
 				count_hit2++;	
 			}
+			cout << "Z smearing 2: "<<endl;
+			hits2.PrintStatus();
 		}
 
 		tree->Fill();
