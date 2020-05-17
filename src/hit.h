@@ -5,6 +5,7 @@
 #include "Cilindro.h"
 #include "Particella.h"
 
+class hit;
 
 // Definizione di una struct per il vertice
 typedef struct {
@@ -12,6 +13,8 @@ typedef struct {
     Int_t mult;
     }
     Vertex;
+
+void change_vertex(Vertex& point, const hit& intersection);
 
 
 class hit : public TObject {

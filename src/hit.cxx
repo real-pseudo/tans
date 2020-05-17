@@ -75,18 +75,11 @@ void hit::cartesian(const Cilindro& c, double phi, double z){
 	fZ=z;
 }
 
-/*void hit::smearing(double phi , double z){
-
-	z_smear1=gRandom->Gaus(fZ,delta_z);
-
-	while(abs(z_smear1)>=lunghezza/2.){
-		z_smear1=gRandom->Gaus(fZ,delta_z); //se il punto sul rivelatore era dentro e lo z trovato dopo lo smearing non lo è, riestraggo il punto di z_smear
-	}
-
-	phi_smear1=gRandom->Gaus(fPhi,deltaphidet1);
+void change_vertex(Vertex& point, const hit& intersection){
+	point.X = intersection.getX();
+	point.Y = intersection.getY();
+	point.Z = intersection.getZ();
 }
-*/
 
 
-//_________________________________________________________________
 
