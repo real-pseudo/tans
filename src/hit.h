@@ -18,6 +18,7 @@ class hit : public TObject {
     double fX;
     double fY;
     double fZ;
+    double fPhi;
 
 
 public:
@@ -33,7 +34,7 @@ public:
     double getY() const {return fY;}
     double getZ() const {return fZ;}
 
-    double getPhi() const {return atan2(fY,fX);}
+    double getPhi() const{return atan2(fY,fX);}
     bool accettanza(double) const;
     void cartesian( const Cilindro& c,double phi, double z);
 

@@ -7,9 +7,19 @@
 #include "TAxis.h"
 #include "TRandom3.h"
 
+ClassImp(Particella)
+
+ Particella::Particella() : TObject(),
+	pLabel(0.),
+ 	phi(0.),
+ 	theta(0.){
+   // default constructor
+ }
 
 Particella::Particella(int label) : TObject(),
 	pLabel(label){
+	//phi(setPhi()),
+	//theta(setTheta()){
 	setTheta();
 	setPhi();
 }
@@ -29,19 +39,23 @@ void Particella::setTheta(){
   	disheta->SetDirectory(0);
   	disheta->SetMinimum(0);
 	
-	TH1F *hc = (TH1F*) disheta->DrawClone();
+	TH1F *hc = (TH1F*) disheta->Clone(); //check prima avevo messo DrawClone, ma dovrebbe fungere uguale
 	hc->GetXaxis()->SetLimits(-1, 1);
 	double hetaval = hc->GetRandom();
 	theta = 2.*TMath::ATan(TMath::Exp(-hetaval));
 	//cout<<"angolo heta: "<<thetaval<<endl;
+
 	F.Close();
+	//hc->Close();
 	delete disheta;
+	//return theta;
 }
 
 //Genera angolo phi da una distribuzione uniforme
 void Particella::setPhi(){
 	phi=2.*TMath::Pi()*(gRandom->Rndm());
 	//cout<<"angolo phi: "<<phival<<endl;
+	//return phi;
 }
 /**Genera la nuova direzione in seguito al multiple scattering */
 void Particella::scattering(){
@@ -57,7 +71,7 @@ void Particella::scattering(){
 	//angolo di scattering con rms 1 mrad
     double theta_0 = gRandom->Gaus(0.,0.001);
     double stheta_0 = TMath::Sin(theta_0), ctheta_0 = TMath::Cos(phi_0);;
-    
+    //cout<<"theta0 :  "<<theta_0<<endl;
     //matrice di rotazione
     double m_rot[3][3] = {
         {-sphi, -cphi * ctheta, stheta * cphi},
@@ -80,5 +94,6 @@ void Particella::scattering(){
 	//nuove direzioni in seguito allo scattering
     theta = TMath::ACos(uz);
     phi = TMath::ATan2(uy,ux);
+
 }
 
