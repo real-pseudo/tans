@@ -55,7 +55,7 @@ void Particella::scattering(){
     double sphi_0 = TMath::Sin(phi_0), cphi_0 = TMath::Cos(phi_0);
 
 	//angolo di scattering con rms 1 mrad
-    double theta_0 = TMath::Abs(gRandom->Gaus(0.,0.001));
+    double theta_0 = gRandom->Gaus(0.,0.001);
     double stheta_0 = TMath::Sin(theta_0), ctheta_0 = TMath::Cos(phi_0);;
     
     //matrice di rotazione
