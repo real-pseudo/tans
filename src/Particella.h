@@ -12,6 +12,7 @@ class Particella : public TObject {
 	void setPhi();
 
 public:
+	Particella();
 	Particella(int label);
 	Particella(const Particella& source);
 	void scattering();
