@@ -15,28 +15,6 @@
 
 #define ARRAY_SIZE 100 
 #define NUMBER_OF_EVENTS 100
-#define NOISE 10
-
-
-
-class ClonesArray {
-public:
-	TClonesArray* ptr = nullptr; 
-	TClonesArray& array;
-
-	ClonesArray(const std::string& classname, unsigned size) : //sto facendo come al solito con il costruttore
-		ptr(new TClonesArray(classname.c_str(), size)), //creo un puntatore ad un oggetto TClonesArray
-		array(*ptr) {//faccio un alias di ptr
-	}
-
-	~ClonesArray() {
-		delete ptr; //per deallocare la memoria allocata con new in ptr
-	}
-
-	void clear() {
-		array.Clear(); //non dovrei far clear su ptr? (è uguale)
-	}
-}; 
 
 void GeneraTree() {
 	bool multScattering = true;
@@ -49,17 +27,10 @@ void GeneraTree() {
 		  hits2(0, 0, 0),
 		  hitBP(0, 0, 0);
 	//Dati di partenza: dimensioni dei rivelatori
-	Cilindro beampipe(0, 3, 0.08, 27), 
-			 det1(1, 4, 0.02, 27), 
-			 det2(2, 7, 0.02, 27); 
+	Cilindro  beampipe(0, 3, 0.08, 27), 
+	          det1(1, 4, 0.02, 27), 
+			      det2(2, 7, 0.02, 27); 
 
-	//Dati-variabili utile a valutare lo smearing(descrive la risposta del rivelatore)
-	double delta_z = 0.00012;//120micrometri in cm
-	double deltaphidet1 = 0.003/(det1.getRadius()),deltaphidet2 = 0.003/(det2.getRadius());//0.003 è deltaS
-	double z_smear1,z_smear2,phi_smear1,phi_smear2;
-
-	//Variabili utili ad aggiungere il noise (se necessario)
-	double z_noise1,z_noise2,phi_noise1,phi_noise2;
 
   	// Apertura del file di output
   	TFile hfile("htree.root","RECREATE");
@@ -75,33 +46,26 @@ void GeneraTree() {
 	ClonesArray particles("Particella", ARRAY_SIZE); 
 	ClonesArray hit_det1("hit", ARRAY_SIZE);
 	ClonesArray hit_det2("hit", ARRAY_SIZE);
-
-	//ClonesArray *scatter_det1=nullptr , *scatter_bp = nullptr;//perchè li definisco puntatori?
-  //Perchè prima venivano creati i ClonesArray dentro l'if
-	
+  //Utili solo in caso di Multiple Scattering
 	ClonesArray scatter_det1("Particella", ARRAY_SIZE);
 	ClonesArray scatter_bp("Particella", ARRAY_SIZE);
 
-	/*if(multScattering){
-		scatter_det1 = new ClonesArray("Particella", ARRAY_SIZE);
-		scatter_bp = new ClonesArray("Particella", ARRAY_SIZE);
-	}
-*/
-	 
-  // Dichiarazione dei branch del TTree
+  // Dichiarazione dei branch del TTree ____________________________________________________________________
 	tree->Branch("VertMult", &point.X, "X/D:Y:Z:mult/I");
 	tree->Branch("Particella", &particles.ptr);//devo fare .ptr perchè devo accedere al ptr nella classe
 	tree->Branch("hit1", &hit_det1.ptr);
-	tree->Branch("hit2", &hit_det2.ptr);
+	tree->Branch("hit2", &hit_det2.ptr);  
 
-	if(multScattering){
+	if(multScattering){ 
     tree->Branch("scattering_bp", &scatter_bp.ptr);
     tree->Branch("scattering_det1", &scatter_det1.ptr);
 		}
+  
 
-
+  //INIZIO SIMULAZIONE______________________________________________________________________________________
 	for(int i = 0; i < NUMBER_OF_EVENTS; i++) { // loop sugli eventi
-    //Generazione di un vertice casuale
+    /*Generazione di un vertice casuale:
+    dispersione su z di alcuni centimetri, in x e y dell’ordine del decimo di millimetro */
 		point.X = gRandom->Gaus(0, 0.01);
 		point.Y = gRandom->Gaus(0, 0.01);
 		point.Z = gRandom->Gaus(0, 5.3);
@@ -110,71 +74,55 @@ void GeneraTree() {
 
 
 		cout << "Evento #" << i << "----" << 
-				"molteplicità = " << point.mult << endl;
+				    "molteplicità = " << point.mult << endl;
 
+    /*Conteggio delle interazioni con i rivelatori e con la beampipe*/
 		int count_hit1 = 0, count_hit2 = 0, count_bp = 0, count_det1 = 0;
 
-		//loop su ogni evento
+		/*Loop per ogni evento*/
 		for(int j = 0; j < point.mult; j++) {
 		  Vertex vtx_hit = point;
       /*Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction*/
       Particella direction(*new(particles.array[j]) Particella(j)); 
-//			Particella& direction = *(new(particles.array[j]) Particella(j));
-			cout  << "\nDirezione # " << direction.getLabel()
-			      << ": phi = " << direction.getPhi()
+			cout  << "\nParticella # " << direction.getLabel()<<
+			    i  << ": phi = " << direction.getPhi()
 				    << ": theta = " << direction.getTheta() << endl;
 			
 			if(multScattering){
-
+        /*Considero l'interazione con la beampipe solo in caso di Multiple Scattering*/
 				hitBP.intersezione(point, beampipe, direction);
 
-				/*Si verifica che il punto di intersezione su BP soddisfi accettanza,
-        si cambia direzione e si sostituiscono i valori di vtx con quelli dell'intersezione:
-				se non è soddisfatta la condizione, non si riempe nulla: non ci sono HIT 
-        nè sul primo layer, nè sul secondo*/
-
+				/*Se il punto di intersezione su BP soddisfa accettanza non si riempe nulla: 
+        non ci sono HIT su nessuno dei due rivelatori*/
 				if(hitBP.accettanza(beampipe)){
-          
 					direction.scattering();//cambio angoli in seguito a MS
           cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
-          change_vertex(vtx_hit, hitBP); //cambio coordinate cartesiane del vertice
+          change_vertex(vtx_hit, hitBP); //prende l'intersezione come nuovo vertice
+          //crea particella che è copia di direction e la salva nell'array
           new(scatter_bp.array[count_bp]) Particella(direction);
+          count_bp++;
 
-					//Particella& changedirect_bp = *(new(scatter_bp.array[count_bp]) Particella(direction));
-
-					/*cout << "\nDirezione # " << changedirect_bp.getLabel() << ": phi = " <<
-           changedirect_bp.getPhi() << ": theta = " << changedirect_bp.getTheta() << endl*/
-					count_bp++;
-
+          /*Interazione con il primo rivelatore*/
 					hits1.intersezione(vtx_hit, det1, direction);
-				/*Una volta determinato il punto di intersezione sul primo layer, si controlla
-          che l'accettanza sia soddisfatta e solo in quel caso si riempe hit_det1
-          se non sono dentro al primo non posso essere dentro al secondo, infatti man mano
-          che mi allontano dal vertice sono sempre più esterno come punto su asse z*/
+				  /*Se il punto di intersezione sul primo rivelatore soddisfa l'accettanza si riempe hit_det1.
+          Se non è dentro al primo non può essere nel secondo: man mano che si allontana dal
+          vertice è sempre più esterno come punto su asse z*/
 
 					if(hits1.accettanza(det1)){
 						cout <<"Z1:"<<endl;
-						hits1.PrintStatus();
-
-						direction.scattering();
-            change_vertex(vtx_hit, hits1);
+            hits1.PrintStatus();
+						direction.scattering(); //modifica la direzione della particella in seguito al MS
+            change_vertex(vtx_hit, hits1); //prende l'intersezione come nuovo vertice
             new(scatter_det1.array[count_det1]) Particella(direction);
-
-						//Particella& changedirect_1 = *(new(scatter_det1.array[count_det1]) Particella(changedirect_bp));
 						count_det1++;
 
-          //SMEARING:
-          /* i valori deltaz e deltaphi vanno a modificare i punti di intersezione con una 
-          gaussiana avente media il punto trovato e sigma la delta fornita, in questo modo 
-          si in considerazione la risposta reale del rivelatore.*/
+            //Smearing sul primo rivelatore
             smearing(hits1, det1);
             new(hit_det1.array[count_hit1]) hit(hits1) ;
             count_hit1++;
 
 					hits2.intersezione(vtx_hit, det2, direction);
-          /*Una volta determinato il punto di intersezione sul secondo layer, si controlla
-          che l'interazione sia dentro il det2 e in quel caso si riempe hit_det2*/
-					if(hits2.accettanza(det2)){
+          if(hits2.accettanza(det2)){
 					  cout <<"Z2:" <<endl;
 						hits2.PrintStatus();
 
@@ -195,21 +143,16 @@ void GeneraTree() {
 			else {
 
 				hits1.intersezione(vtx_hit, det1, direction);
-
-				if(hits1.accettanza(det1)){
-
-					cout <<"Z1:"<<endl;
+        if(hits1.accettanza(det1)){
+          cout <<"Z1:"<<endl;
 					hits1.PrintStatus();
-				//SMEARING
           smearing(hits1, det1);
-					
 					new(hit_det1.array[count_hit1]) hit(hits1);
 					count_hit1++;
 
+          /*Interazione con rivelatore 2*/
 					hits2.intersezione(vtx_hit, det2, direction);
-
 					if(hits2.accettanza(det2)){
-
 						cout <<"Z2:" <<endl;
 						hits2.PrintStatus();
 
@@ -232,23 +175,10 @@ void GeneraTree() {
     del primo detector(senza MS) o della BP(con MS) si salverebbero solo i conteggi di noise che sono
     messi dentro al ciclo degli eventi.*/
 
-		//Si estrae z e phi da una distribuzione uniforme,si passa in cartesiane e si riempe HIT come al solito
+		
 		  if(noise){
-			  for(int k=count_hit1;k<count_hit1+NOISE;k++){
-				  z_noise1=det1.getLenght()*(gRandom->Rndm()) - det1.getLenght()/2; //metto - L/2 perchè noi ragioniamo nell'accettanza
-				  phi_noise1=2*TMath::Pi()*(gRandom->Rndm());
-
-				  hits1.cartesian(det1,phi_noise1,z_noise1);
-				  new(hit_det1.array[k]) hit(hits1);
-		 		}
-
-			  for(int i=count_hit2;i<count_hit2+NOISE;i++){
-				  z_noise2=det2.getLenght()*(gRandom->Rndm()) - det2.getLenght()/2;
-				  phi_noise2=2*(TMath::Pi())*(gRandom->Rndm());
-
-				  hits2.cartesian(det2,phi_noise2,z_noise2);
-				  new(hit_det2.array[i]) hit(hits2);
-		  		}
+        add_noise(hits1, det1, count_hit1, hit_det1);
+        add_noise(hits2, det2, count_hit2, hit_det2);
 		  }
 
 
@@ -258,8 +188,6 @@ void GeneraTree() {
 		hit_det1.clear(); 
 		hit_det2.clear();
 		if(multScattering) {
-				//delete scatter_bp;
-				//delete scatter_det1;
 			scatter_bp.clear();
 			scatter_det1.clear();
 			}
