@@ -34,23 +34,21 @@ public:
 	}
 
 	void clear() {
-		array.Clear(); //non dovrei far clear su ptr?
+		array.Clear(); //non dovrei far clear su ptr? (è uguale)
 	}
 }; 
-
 
 void GeneraTree() {
 	bool multScattering = true;
 	bool noise = true;
-	static Vertex point; //vertice
+	static Vertex point; //vertice che verrà generato
 	
 	
-	//numero di hit per ciascun cilindro
+	//numero di conteggi per ciascun cilindro
 	hit hits1(0, 0, 0), 
-		hits2(0, 0, 0),
-		hitBP(0, 0, 0);
+		  hits2(0, 0, 0),
+		  hitBP(0, 0, 0);
 	//Dati di partenza: dimensioni dei rivelatori
-	double lunghezza = 27;
 	Cilindro beampipe(0, 3, 0.08, 27), 
 			 det1(1, 4, 0.02, 27), 
 			 det2(2, 7, 0.02, 27); 
@@ -237,7 +235,7 @@ void GeneraTree() {
 		//Si estrae z e phi da una distribuzione uniforme,si passa in cartesiane e si riempe HIT come al solito
 		  if(noise){
 			  for(int k=count_hit1;k<count_hit1+NOISE;k++){
-				  z_noise1=lunghezza*(gRandom->Rndm()) - lunghezza/2; //metto - L/2 perchè noi ragioniamo nell'accettanza
+				  z_noise1=det1.getLenght()*(gRandom->Rndm()) - det1.getLenght()/2; //metto - L/2 perchè noi ragioniamo nell'accettanza
 				  phi_noise1=2*TMath::Pi()*(gRandom->Rndm());
 
 				  hits1.cartesian(det1,phi_noise1,z_noise1);
@@ -245,7 +243,7 @@ void GeneraTree() {
 		 		}
 
 			  for(int i=count_hit2;i<count_hit2+NOISE;i++){
-				  z_noise2=lunghezza*(gRandom->Rndm()) - lunghezza/2;
+				  z_noise2=det2.getLenght()*(gRandom->Rndm()) - det2.getLenght()/2;
 				  phi_noise2=2*(TMath::Pi())*(gRandom->Rndm());
 
 				  hits2.cartesian(det2,phi_noise2,z_noise2);
