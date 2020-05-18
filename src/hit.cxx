@@ -65,8 +65,8 @@ void hit::PrintStatus() const {
 
 
 
-bool hit::accettanza(double lunghezza) const {
-	return (abs(fZ)<=lunghezza/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True
+bool hit::accettanza(const Cilindro& c) const {
+	return (abs(fZ)<=c.getLenght()/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True
 }
 
 void hit::cartesian(const Cilindro& c, double phi, double z){

@@ -7,22 +7,25 @@ ClassImp(Cilindro)
 Cilindro::Cilindro():TObject(),
 fstrato(0),
 fraggio(0.),
-fspessore(0.)
+fspessore(0.),
+flunghezza(0.)
 {
 	
 }
 
-Cilindro::Cilindro(int strato, double raggio, double spessore): TObject(),
+Cilindro::Cilindro(int strato, double raggio, double spessore, double lunghezza): TObject(),
 fstrato(strato), //inizializzazione variabili come int a=5 a(5)
 fraggio(raggio),
-fspessore(spessore) {
+fspessore(spessore),
+flunghezza(lunghezza) {
 }
 
 //_________________________________________________________________
 Cilindro::Cilindro(const Cilindro &source) : TObject(source),
   fstrato(source.fstrato),
   fraggio(source.fraggio),
-  fspessore(source.fspessore) {
+  fspessore(source.fspessore),
+  flunghezza(source.flunghezza) {
 }
 
 //_________________________________________________________________
@@ -42,6 +45,9 @@ void Cilindro::setThickness(double spessore) {
     fspessore = spessore;
 }
 
+void Cilindro::setLunghezza(double lunghezza) {
+    flunghezza = lunghezza;
+}
 
 //_________________________________________________________________
 int Cilindro::getLayer() const {
@@ -57,6 +63,11 @@ double Cilindro::getRadius() const {
 double Cilindro::getThickness() const {
     return fspessore;
 }
+
+double Cilindro::getLenght() const {
+    return flunghezza;
+}
+
 
 //_________________________________________________________________
 void Cilindro::printStatus() const {

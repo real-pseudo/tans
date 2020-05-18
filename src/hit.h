@@ -38,7 +38,7 @@ public:
     double getZ() const {return fZ;}
 
     double getPhi() const{return atan2(fY,fX);}
-    bool accettanza(double) const;
+    bool accettanza(const Cilindro& c) const;
     void cartesian( const Cilindro& c,double phi, double z);
 
     void PrintStatus() const;
