@@ -18,8 +18,6 @@ ClassImp(Particella)
 
 Particella::Particella(int label) : TObject(),
 	pLabel(label){
-	//phi(setPhi()),
-	//theta(setTheta()){
 	setTheta();
 	setPhi();
 }

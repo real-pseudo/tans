@@ -165,38 +165,24 @@ void GeneraTree() {
 						//Particella& changedirect_1 = *(new(scatter_det1.array[count_det1]) Particella(changedirect_bp));
 						count_det1++;
 
-				//SMEARING:
-				/* i valori deltaz e deltaphi vanno a modificare i punti di intersezione con una 
-        gaussiana avente media il punto trovato e sigma la delta fornita, in questo modo 
-        si in considerazione la risposta reale del rivelatore.*/
-		smearing(hits1, det1);
+          //SMEARING:
+          /* i valori deltaz e deltaphi vanno a modificare i punti di intersezione con una 
+          gaussiana avente media il punto trovato e sigma la delta fornita, in questo modo 
+          si in considerazione la risposta reale del rivelatore.*/
+            smearing(hits1, det1);
+            new(hit_det1.array[count_hit1]) hit(hits1) ;
+            count_hit1++;
 
-						/*do {
-              z_smear1=gRandom->Gaus(hits1.getZ(),delta_z);
-            }	while(abs(z_smear1)>=lunghezza/2.);
-  					
-            phi_smear1=gRandom->Gaus(hits1.getPhi(),deltaphidet1);
+					hits2.intersezione(vtx_hit, det2, direction);
+          /*Una volta determinato il punto di intersezione sul secondo layer, si controlla
+          che l'interazione sia dentro il det2 e in quel caso si riempe hit_det2*/
+					if(hits2.accettanza(det2)){
+					  cout <<"Z2:" <<endl;
+						hits2.PrintStatus();
 
-						hits1.cartesian(det1,phi_smear1,z_smear1);*/
-						new(hit_det1.array[count_hit1]) hit(hits1) ;
-						count_hit1++;
-
-						hits2.intersezione(vtx_hit, det2, direction);
-            /*Una volta determinato il punto di intersezione sul secondo layer, si controlla
-            che l'interazione sia dentro il det2 e in quel caso si riempe hit_det2*/
-						if(hits2.accettanza(det2)){
-							cout <<"Z2:" <<endl;
-							hits2.PrintStatus();
-
-							do{
-                			z_smear2=gRandom->Gaus(hits2.getZ(),delta_z);} //SMEARING come prima per il punto trovato
-							while(abs(z_smear2)>=det2.getLenght()/2.);
-                            
-							phi_smear2=gRandom->Gaus(hits2.getPhi(),deltaphidet2);
-
-							hits2.cartesian(det2, phi_smear2,z_smear2);
-							new(hit_det2.array[count_hit2])hit(hits2);
-							count_hit2++;
+						smearing(hits2, det2);
+						new(hit_det2.array[count_hit2])hit(hits2);
+						count_hit2++;
 						}
 
 					}
@@ -217,13 +203,8 @@ void GeneraTree() {
 					cout <<"Z1:"<<endl;
 					hits1.PrintStatus();
 				//SMEARING
-					z_smear1=gRandom->Gaus(hits1.getZ(),delta_z);
-					while(abs(z_smear1)>=det1.getLenght()/2.){
-						z_smear1=gRandom->Gaus(hits1.getZ(),delta_z); //se il punto sul rivelatore era dentro e lo z trovato dopo lo smearing non lo è, riestraggo il punto di z_smear
-					}
-					phi_smear1=gRandom->Gaus(hits1.getPhi(),deltaphidet1);
-				//salvataggio punti
-					hits1.cartesian(det1,phi_smear1,z_smear1);
+          smearing(hits1, det1);
+					
 					new(hit_det1.array[count_hit1]) hit(hits1);
 					count_hit1++;
 
@@ -234,13 +215,7 @@ void GeneraTree() {
 						cout <<"Z2:" <<endl;
 						hits2.PrintStatus();
 
-						z_smear2=gRandom->Gaus(hits2.getZ(),delta_z);
-						while(abs(z_smear2)>=det2.getLenght()/2.){
-							z_smear2=gRandom->Gaus(hits2.getZ(),delta_z);
-						}
-						phi_smear2=gRandom->Gaus(hits2.getPhi(),deltaphidet2);
-
-						hits2.cartesian(det2, phi_smear2,z_smear2);
+					  smearing(hits2, det2);
 						new(hit_det2.array[count_hit2])hit(hits2);
 						count_hit2++;
 					}
