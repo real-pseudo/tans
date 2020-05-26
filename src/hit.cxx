@@ -35,7 +35,7 @@ hit::~hit()
 {
 }
 
-void hit::intersezione(const Vertex& vrx, const Cilindro& c, const Particella& particle) {
+void hit::traject_intersection(const Vertex& vrx, const Cilindro& c, const Particella& particle) {
 	//intersezione(vrx.X, vrx.Y, vrx.Z, &c, &direction); 			
 	double x = vrx.X, y = vrx.Y, z =vrx.Z;
 	double 	c1=sin(particle.getTheta())*cos(particle.getPhi()),
@@ -65,7 +65,7 @@ void hit::PrintStatus() const {
 
 
 
-bool hit::accettanza(const Cilindro& c) const {
+bool hit::acceptance(const Cilindro& c) const {
 	return (abs(fZ)<=c.getLenght()/2); //se l'urto avviene entro la lunghezza del rivelatore restituisce True
 }
 
@@ -81,5 +81,15 @@ void change_vertex(Vertex& point, const hit& intersection){
 	point.Z = intersection.getZ();
 }
 
-
+void reconstruction_vtx(Vertex& point, const hit& hit_1, const hit& hit_2, const Cilindro& c, double delta_R){
+	double delta_z=(hit_2.getZ()-hit_1.getZ());
+	double m=delta_R/delta_z;
+	point.X = 0.;
+	point.Y = 0.;
+	point.Z = hit_1.getZ()-(c.getRadius())/m;//vtx=-q/m=-(-z1*m+R1)/m=z1-R1/m
+	/* Asse Z = Asse X;
+	 * Asse R = Asse Y;
+	 *
+	 */
+}
 

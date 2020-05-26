@@ -15,7 +15,7 @@ typedef struct {
     Vertex;
 
 void change_vertex(Vertex& point, const hit& intersection);
-
+void reconstruction_vtx(Vertex& point, const hit& hit_1, const hit& hit_2, const Cilindro& c, double delta_R);
 
 class hit : public TObject {
     double fX;
@@ -32,13 +32,13 @@ public:
 
     virtual ~hit();
     
-    void intersezione(const Vertex& vrx, const Cilindro& c, const Particella& particle); 
+    void traject_intersection(const Vertex& vrx, const Cilindro& c, const Particella& particle);
     double getX() const {return fX;} 
     double getY() const {return fY;}
     double getZ() const {return fZ;}
 
     double getPhi() const{return atan2(fY,fX);}
-    bool accettanza(const Cilindro& c) const;
+    bool acceptance(const Cilindro& c) const;
     void cartesian( const Cilindro& c,double phi, double z);
 
     void PrintStatus() const;

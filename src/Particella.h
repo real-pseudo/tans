@@ -15,12 +15,15 @@ public:
 	Particella();
 	Particella(int label);
 	Particella(const Particella& source);
+
+	virtual ~Particella();
+
 	void scattering();
 	double getTheta() const {return theta;}
 	double getPhi() const {return phi;}
 	int getLabel() const {return pLabel;}
 
-	virtual ~Particella() {}
+
 
    
 

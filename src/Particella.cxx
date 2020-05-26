@@ -8,8 +8,8 @@
 #include "TRandom3.h"
 
 ClassImp(Particella)
-
- Particella::Particella() : TObject(),
+//
+Particella::Particella() : TObject(),
 	pLabel(0.),
  	phi(0.),
  	theta(0.){
@@ -18,8 +18,8 @@ ClassImp(Particella)
 
 Particella::Particella(int label) : TObject(),
 	pLabel(label){
-	setTheta();
 	setPhi();
+	setTheta();
 }
 
 
@@ -29,6 +29,9 @@ Particella::Particella(const Particella& source) : TObject(),
   phi(source.phi),
   theta(source.theta) {
 } 
+Particella::~Particella()
+{
+}
 
 //Genera gli angoli di emissione theta da distribuzione di pseudorapidità
 void Particella::setTheta(){
