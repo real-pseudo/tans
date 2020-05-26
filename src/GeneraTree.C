@@ -84,8 +84,7 @@ void GeneraTree() {
 		  Vertex vtx_hit = point;
       /*Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction*/
       Particella direction(*new(particles.array[j]) Particella(j)); 
-			cout  << "\nParticella # " << direction.getLabel()<<
-			    i  << ": phi = " << direction.getPhi()
+			cout  << "\nParticella # " << direction.getLabel()<< i  << ": phi = " << direction.getPhi()
 				    << ": theta = " << direction.getTheta() << endl;
 			
 			if(multScattering){
@@ -177,7 +176,7 @@ void GeneraTree() {
 
 		
 		  if(noise){
-        add_noise(hits1, det1, count_hit1, hit_det1);
+        add_noise(hits1, det1, count_hit1, hit_det1); 
         add_noise(hits2, det2, count_hit2, hit_det2);
 		  }
 
