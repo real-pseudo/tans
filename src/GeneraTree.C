@@ -14,22 +14,22 @@
 #include "Utility.h"
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 10000
+#define NUMBER_OF_EVENTS 50000
 
 void GeneraTree() {
-	bool multScattering = false;
+	bool multScattering = true;
 	bool noise = true;
 	static Vertex point; //vertice che verrà generato
 	
 	
 	//numero di conteggi per ciascun cilindro
-	hit hits1(0, 0, 0), 
+	hit		hits1(0, 0, 0), 
 			hits2(0, 0, 0),
 			hitBP(0, 0, 0);
 	//Dati di partenza: dimensioni dei rivelatori
-	Cilindro  beampipe(0, 3, 0.08, 27), 
-			det1(1, 4, 0.02, 27), 
-			det2(2, 7, 0.02, 27); 
+	Cilindro	beampipe(0, 3, 0.08, 27), 
+				det1(1, 4, 0.02, 27), 
+				det2(2, 7, 0.02, 27); 
 
 
 		// Apertura del file di output
@@ -58,10 +58,9 @@ void GeneraTree() {
 	tree->Branch("hit2", &hit_det2.ptr);  
 
 	if(multScattering){ 
-
 		tree->Branch("scattering_bp", &scatter_bp.ptr);
 		tree->Branch("scattering_det1", &scatter_det1.ptr);
-		}
+	}
 	
 
 	//INIZIO SIMULAZIONE______________________________________________________________________________________
@@ -72,10 +71,10 @@ void GeneraTree() {
 		point.Y = gRandom->Gaus(0, 0.01);
 		point.Z = gRandom->Gaus(0, 5.3);
 
-			point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
+		point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
 
-		cout << "Evento #" << i << "----" << 
-			"molteplicità = " << point.mult << endl;
+		if (i % 1000 == 0)
+			cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl; 
 
 		/*Conteggio delle interazioni con i rivelatori e con la beampipe*/
 		int count_hit1 = 0, count_hit2 = 0, count_bp = 0, count_det1 = 0;
@@ -83,13 +82,15 @@ void GeneraTree() {
 		/*Loop per ogni evento*/
 		for(int j = 0; j < point.mult; j++) {
 			Vertex vtx_hit = point;
-				/*Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction*/
-
+			//Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction
 			Particella direction(*new(particles.array[j]) Particella(j));
+
+			/*
 			cout  << "\nDirezione_Particella #" << direction.getLabel() <<
 			"(event " << i << ") " <<
 			": phi = " << direction.getPhi() <<
-			"; theta = " << direction.getTheta() << endl;
+			"; theta = " << direction.getTheta() << endl;*/ 
+		
 
 			
 			if(multScattering){
@@ -100,7 +101,7 @@ void GeneraTree() {
 				non ci sono HIT su nessuno dei due rivelatori*/
 				if(hitBP.acceptance(beampipe)){
 					direction.scattering();//cambio angoli in seguito a MS
-					cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
+		//			cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
 					change_vertex(vtx_hit, hitBP); //prende l'intersezione come nuovo vertice
 					//crea particella che è copia di direction e la salva nell'array
 					new(scatter_bp.array[count_bp]) Particella(direction);
@@ -113,8 +114,8 @@ void GeneraTree() {
 					vertice è sempre più esterno come punto su asse z*/
 
 					if(hits1.acceptance(det1)){
-						cout <<"Z1:"<<endl;
-						hits1.PrintStatus();
+		//				cout <<"Z1:"<<endl;
+		//				hits1.PrintStatus();
 						direction.scattering(); //modifica la direzione della particella in seguito al MS
 						change_vertex(vtx_hit, hits1); //prende l'intersezione come nuovo vertice
 						new(scatter_det1.array[count_det1]) Particella(direction);
@@ -127,8 +128,8 @@ void GeneraTree() {
 
 						hits2.traject_intersection(vtx_hit, det2, direction);
 						if(hits2.acceptance(det2)){
-							cout <<"Z2:" <<endl;
-							hits2.PrintStatus();
+		//					cout <<"Z2:" <<endl;
+		//					hits2.PrintStatus();
 
 							smearing(hits2, det2);
 							new(hit_det2.array[count_hit2])hit(hits2);
@@ -148,8 +149,8 @@ void GeneraTree() {
 
 				hits1.traject_intersection(vtx_hit, det1, direction);
 				if(hits1.acceptance(det1)){
-					cout <<"Z1:"<<endl;
-					hits1.PrintStatus();
+		//			cout <<"Z1:"<<endl;
+		//			hits1.PrintStatus();
 					smearing(hits1, det1);
 					new(hit_det1.array[count_hit1]) hit(hits1);
 					count_hit1++;
@@ -157,8 +158,8 @@ void GeneraTree() {
 					/*Interazione con rivelatore 2*/
 					hits2.traject_intersection(vtx_hit, det2, direction);
 					if(hits2.acceptance(det2)){
-						cout <<"Z2:" <<endl;
-						hits2.PrintStatus();
+		//				cout <<"Z2:" <<endl;
+		//				hits2.PrintStatus();
 
 						smearing(hits2, det2);
 						new(hit_det2.array[count_hit2])hit(hits2);
@@ -166,21 +167,20 @@ void GeneraTree() {
 					}
 				}
 			}
-
+			/*
 			cout << "Z smearing 1: "<<endl;
 			hits1.PrintStatus();
 			
 			cout << "Z smearing 2: "<<endl;
-			hits2.PrintStatus();
+			hits2.PrintStatus();*/
 		}
 
 		/*RUMORE: punti aggiuntivi che si mettono per ogni evento simulato oltre ai conteggi veri. 
 		Sono conteggi spuri dovuti all'elettronica.Se non dovessi soddisfare le condizioni di accettanza
 		del primo detector(senza MS) o della BP(con MS) si salverebbero solo i conteggi di noise che sono
 		messi dentro al ciclo degli eventi.*/
-
 		
-			if(noise){
+			if(noise) {
 				add_noise(hits1, det1, count_hit1, hit_det1); 
 				add_noise(hits2, det2, count_hit2, hit_det2);
 			}
@@ -194,7 +194,7 @@ void GeneraTree() {
 		if(multScattering) {
 			scatter_bp.clear();
 			scatter_det1.clear();
-			}
+		}
 	}
 
 

@@ -17,5 +17,5 @@ void loader() {
     }
 
     gROOT->ProcessLine(".X GeneraTree.C");
-	gROOT->ProcessLine(".X LeggiTree.C");
+    gROOT->ProcessLine(".X LeggiTree.C");
 }
