@@ -33,6 +33,7 @@ void LeggiTree() {
   ClonesArray hit_det1("hit", ARRAY_SIZE);
   ClonesArray hit_det2("hit", ARRAY_SIZE);
 
+  int c=0;
 
   //Apertura file di input
   TFile hfile("htree.root");
@@ -60,8 +61,8 @@ void LeggiTree() {
   int entries1 = 0, entries2 = 0;
   double deltaR=(det2.getRadius()- det1.getRadius());
   double deltaphi;
-  //TH1D *z = new TH1D("z","istogramma ",15,-10.5,10.5);
-  //z->SetDirectory(0);
+  TH1D *z = new TH1D("z","istogramma ",400,-50.5,50.5);//prova di graficare zrec-zsim
+  z->SetDirectory(0);
   /*****
   double width = 0.1;
   double bin_extreme = 200;//det2.getRadius()*2*100;
@@ -69,7 +70,7 @@ void LeggiTree() {
 //  TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+5,-bin_extreme-2-(width/2.),bin_extreme+2+(width/2.));
   TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+5,-bin_extreme-(width/2.),bin_extreme+(width/2.)); ***/
 
-  cout << "porcoddio" << endl; 
+
 
   for(int i=0 ;i < evsim; i++) {
     tree->GetEvent(i);
@@ -102,26 +103,31 @@ void LeggiTree() {
     //MANCA IL CALCOLO DEL MASSIMO-tracklets DEI VARI VALORI DI Zrec, PER RIEMPIRE L'NTUPLA HO USATO L'ULTIMO VALORE DI Z RICOSTRUITO
     //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
     double width = 0.1;
-    double bin_extreme = 200;//det2.getRadius()*2*100;
+    double bin_extreme = 20;
     double nbin=(2*bin_extreme)/width;
-    TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+5,-bin_extreme-2-(width/2.),bin_extreme+2+(width/2.));
+    TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+6,-bin_extreme-2-(width/2.),bin_extreme+2+(width/2.));
+    trackZ->SetDirectory(0);
     int bin_peak = 0, nc = 0;
     double most_prob_Z = 0;
     bool twopeaks = false; //variabile di controllo per la presenza di più picchi
-
     
+
     for(int i=0;i<count;i++){	
       trackZ->Fill(rec_vtx[i].Z);
-      TAxis *xaxis = trackZ->GetXaxis();
-      Int_t binx = xaxis->FindBin(rec_vtx[i].Z);
+      TAxis *xaxis = trackZ->GetXaxis();//serve?
+      Int_t binx = xaxis->FindBin(rec_vtx[i].Z); //serve?
       //cout<<"vtx ricostruito: "<<rec_vtx[i].Z << "pos:"<<binx<<endl;
     }
+
+    //per graficare tracklets con sim di pochi eventi
+    //trackZ->Draw();
+    //new TCanvas();
+
     //Trovo il massimo
     bin_peak = trackZ->GetMaximumBin();
-    
     //Verifico che il massimo sia unico
     for(int v=0;v<nbin+1;v++){
-      if(trackZ->GetBinContent(v) == trackZ->GetBinContent(bin_peak) && v!=bin_peak && abs(v-bin_peak) >= 10) {
+      if(trackZ->GetBinContent(v) == trackZ->GetBinContent(bin_peak) && v!=bin_peak && abs(v-bin_peak) >= 10){
         twopeaks = true; 
         break;
       }
@@ -129,44 +135,54 @@ void LeggiTree() {
     
     //Ricerco i limiti per il rebin (da fare solo se twopeaks=true)
     if(twopeaks){
-      trackZ->Rebin(5);
+    //cout<<"provoREBIN"<<endl;
+      trackZ->Rebin(2);
       twopeaks = false;
       bin_peak = trackZ->GetMaximumBin();
       //Verifico nuovamente se il picco è unico
       for(int v=0;v<nbin+1;v++){
-        if(trackZ->GetBinContent(v) == trackZ->GetBinContent(bin_peak) && v!=bin_peak && abs(v-bin_peak) >= 10) 
+        if(trackZ->GetBinContent(v) == trackZ->GetBinContent(bin_peak) && v!=bin_peak  && abs(v-bin_peak) >= 10){
           twopeaks = true; 
           break;
-      }    
-    
-    //Calcolo la media intorno al bin con il picco
-    if(twopeaks == false) {
-      double sum=0;
-      double ncounts=0;
-      for(int i=bin_peak-3; i<bin_peak+4; i++) {
-        sum += trackZ->GetBinContent(i)*trackZ->GetBinCenter(i);
-        ncounts += trackZ->GetBinContent(i);
-      }
-      most_prob_Z = sum/ncounts;
-
-      if (i % 1000 == 0)
-        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
-    
-      //nt->Fill(point.Z, most_prob_Z,  (point.Z - most_prob_Z));
-    //QUESTO NON VA BENE PERCHÈ STO SCEGLIENDO
-    if(abs(point.Z - most_prob_Z)<1)
-        nt->Fill(point.Z, most_prob_Z,  (point.Z - most_prob_Z)*100);
-      else{
-        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
+        }
       }
     }
-    
-    //nt->Fill(point.Z, most_prob_Z, point.Z -most_prob_Z);
 
-    delete trackZ;
-    
+    //Calcolo la media intorno al bin con il picco
+    if(twopeaks == false) {
+    //cout<<"calcolomedia"<<endl;
+    	double sum=0;
+    	double ncounts=0;
+    	for(int i=bin_peak-3; i<bin_peak+4; i++) {
+    		sum += trackZ->GetBinContent(i)*trackZ->GetBinCenter(i);
+    		ncounts += trackZ->GetBinContent(i);
+    	}
+
+    	most_prob_Z = sum/ncounts;
+
+      //if (i % 1000 == 0)
+        //cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
+
+        nt->Fill(point.Z, most_prob_Z,(most_prob_Z-point.Z)*100);
+        z->Fill((most_prob_Z-point.Z)*100);
+    }
+
+      else{
+    	  c++;
+        //cout << "vtx originale:"<< point.Z << " -- vtx non ricostruito??: "<< most_prob_Z <<endl;
+      }
+
+
+    delete trackZ;//da togliere se uno prova a graficare con pochi eventi sim.
+
   }
+  //z->SetMarkerStyle(21);
+  //z->SetMarkerSize(.4);
+  z->Draw();
 
+  cout<<"picchi non ric: "<<c<<endl;
   fout.Write();
   fout.Close();
+
+
 }
