@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <vector>
 
+#define DEBUG 0
+
 #define ARRAY_SIZE 100
 #define DELTAPHI 0.006 //6 mrad differenza di phi oltre la quale i due hit non possono appartenere allo stesso vertice
 
@@ -25,7 +27,9 @@ void LeggiTree() {
           det2(2, 7, 0.02, 27);
   //Dichiarazione NTupla e file in cui salvare i vertici
   TFile fout("vtxreco.root","recreate");
-  TNtuple *nt = new TNtuple("nt","vertices","zsim:zrec:diff");
+//  TNtuple *nt = new TNtuple("nt","vertices","zsim:zrec:diff");
+	TNtuple nt("nt","vertices","zsim:zrec:diff");
+	bool recons=true;
 
   //Dichiarazione TClonesArray
   static Vertex point;
@@ -34,6 +38,7 @@ void LeggiTree() {
   ClonesArray hit_det2("hit", ARRAY_SIZE);
 
   int c=0;
+	int success=0;
 
   //Apertura file di input
   TFile hfile("htree.root");
@@ -61,25 +66,22 @@ void LeggiTree() {
   int entries1 = 0, entries2 = 0;
   double deltaR=(det2.getRadius()- det1.getRadius());
   double deltaphi;
-  TH1D *z = new TH1D("z","istogramma ",400,-50.5,50.5);//prova di graficare zrec-zsim
+  TH1D *z = new TH1D("z","istogramma ",601,-60.5,60.5);//istogramma zrec-zsim
   z->SetDirectory(0);
-  /*****
-  double width = 0.1;
-  double bin_extreme = 200;//det2.getRadius()*2*100;
-  double nbin=(2*bin_extreme)/width;
-//  TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+5,-bin_extreme-2-(width/2.),bin_extreme+2+(width/2.));
-  TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+5,-bin_extreme-(width/2.),bin_extreme+(width/2.)); ***/
-
-
+ 
 
   for(int i=0 ;i < evsim; i++) {
     tree->GetEvent(i);
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
-    //cout<<"evento "<<i<<endl;
-    //cout<<"Entries-hit1: "<<entries1<<endl;
-    //cout<<"Entries-hit2: "<<entries2<<endl;
-    //cout<<"vtx: "<<point.Z<<endl;
+
+		
+    cout<<"evento "<<i<<endl;
+		#if DEBUG
+    cout<<"Entries-hit1: "<<entries1<<endl;
+    cout<<"Entries-hit2: "<<entries2<<endl;
+    cout<<"vtx: "<<point.Z<<endl;
+		#endif
 
     //definisco un vettore di vertici in cui raccogliere i vertici ricostruiti
     Vertex rec_vtx[entries1*entries2];
@@ -95,7 +97,9 @@ void LeggiTree() {
         //determino il vertice come intersezione della retta passante per i due hit con l asse del fascio(z)
         if(deltaphi<DELTAPHI){
           reconstruction_vtx(rec_vtx[count],*hit1_event,*hit2_event,det1,deltaR);
+					#if DEBUG
           //cout<<"vtx ricostruito: "<<rec_vtx[count].Z<<endl;
+					#endif
           count++;
         }
       }
@@ -103,57 +107,49 @@ void LeggiTree() {
     //MANCA IL CALCOLO DEL MASSIMO-tracklets DEI VARI VALORI DI Zrec, PER RIEMPIRE L'NTUPLA HO USATO L'ULTIMO VALORE DI Z RICOSTRUITO
     //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
     double width = 0.1;
-    double bin_extreme = 20;
+    double bin_extreme = 364;
     double nbin=(2*bin_extreme)/width;
-    TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+6,-bin_extreme-2-(width/2.),bin_extreme+2+(width/2.));
+    TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+1,-bin_extreme-(width/2.),bin_extreme+(width/2.));
     trackZ->SetDirectory(0);
-    int bin_peak = 0, nc = 0;
+    int bin_peak = 0;
     double most_prob_Z = 0;
-    bool twopeaks = false; //variabile di controllo per la presenza di più picchi
-    
 
+		//Riempimento istogramma dei tracklets
     for(int i=0;i<count;i++){	
       trackZ->Fill(rec_vtx[i].Z);
-      TAxis *xaxis = trackZ->GetXaxis();//serve?
-      Int_t binx = xaxis->FindBin(rec_vtx[i].Z); //serve?
-      //cout<<"vtx ricostruito: "<<rec_vtx[i].Z << "pos:"<<binx<<endl;
-    }
-
-    //per graficare tracklets con sim di pochi eventi
-    //trackZ->Draw();
-    //new TCanvas();
-
+      #if DEBUG
+      TAxis *xaxis = trackZ->GetXaxis();
+      Int_t binx = xaxis->FindBin(rec_vtx[i].Z); 
+      cout<<"vtx ricostruito: "<<rec_vtx[i].Z << "pos:"<<binx<< "  centro del bin:" << trackZ->GetBinCenter(binx) <<endl;
+      #endif DEBUG
+		}
+		int nbins=0;
+		
     //Trovo il massimo
     bin_peak = trackZ->GetMaximumBin();
-    //Verifico che il massimo sia unico
-    for(int v=0;v<nbin+1;v++){
-      if(trackZ->GetBinContent(v) == trackZ->GetBinContent(bin_peak) && v!=bin_peak && abs(v-bin_peak) >= 10){
-        twopeaks = true; 
-        break;
-      }
-    }
-    
-    //Ricerco i limiti per il rebin (da fare solo se twopeaks=true)
-    if(twopeaks){
-    //cout<<"provoREBIN"<<endl;
-      trackZ->Rebin(2);
-      twopeaks = false;
-      bin_peak = trackZ->GetMaximumBin();
-      //Verifico nuovamente se il picco è unico
-      for(int v=0;v<nbin+1;v++){
-        if(trackZ->GetBinContent(v) == trackZ->GetBinContent(bin_peak) && v!=bin_peak  && abs(v-bin_peak) >= 10){
-          twopeaks = true; 
-          break;
-        }
-      }
-    }
+		//Controllo se c'è più di un massimo
+		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
+		//Se c'è più di un max fai un rebin massimo 2 volte 
+		for(int rebin=1; twopeaks && rebin < 3; rebin++){
+			trackZ->Rebin(3);
+			nbins=trackZ->GetNbinsX();
+			cout << "new nbins: " << nbins<< endl;
+    	bin_peak = trackZ->GetMaximumBin();
+    	//Verifico nuovamente se il picco è unico
+    	twopeaks = more_peaks(trackZ, nbin, bin_peak);
+			if(twopeaks==false){
+				++success;
+			}
+
+		}
+
 
     //Calcolo la media intorno al bin con il picco
     if(twopeaks == false) {
     //cout<<"calcolomedia"<<endl;
     	double sum=0;
     	double ncounts=0;
-    	for(int i=bin_peak-3; i<bin_peak+4; i++) {
+    	for(int i=bin_peak-2; i<bin_peak+3; i++) {
     		sum += trackZ->GetBinContent(i)*trackZ->GetBinCenter(i);
     		ncounts += trackZ->GetBinContent(i);
     	}
@@ -161,11 +157,11 @@ void LeggiTree() {
     	most_prob_Z = sum/ncounts;
 
       //if (i % 1000 == 0)
-        //cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
+        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
 
-        nt->Fill(point.Z, most_prob_Z,(most_prob_Z-point.Z)*100);
+        nt.Fill(point.Z, most_prob_Z,(most_prob_Z-point.Z)*100);
         z->Fill((most_prob_Z-point.Z)*100);
-    }
+    	}
 
       else{
     	  c++;
@@ -181,8 +177,7 @@ void LeggiTree() {
   z->Draw();
 
   cout<<"picchi non ric: "<<c<<endl;
+	cout<< "rebin utili" << success<< endl;
   fout.Write();
   fout.Close();
-
-
 }

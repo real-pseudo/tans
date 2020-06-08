@@ -35,6 +35,7 @@ public:
 int getMultiplicity();
 void smearing(hit& interaction, const Cilindro& c);
 void add_noise(hit& interact, const Cilindro& detector, double count_hit, ClonesArray& clonearray);
+bool more_peaks(TH1D* histo, const int nbin, const int peak);
 
 
 #endif

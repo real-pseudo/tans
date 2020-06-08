@@ -45,5 +45,16 @@ void add_noise(hit& interact, const Cilindro& detector, double count_hit, Clones
 		}		
 	}
 
+bool more_peaks(TH1D* histo, const int nbin, const int peak){
+
+	for(int v=0;v<nbin+1;v++){
+		if(v!=peak && histo->GetBinContent(v) == histo->GetBinContent(peak) && abs(peak-v) >= 4){
+			return true;
+		}
+	}
+	return false;
+}
+
+
 
  
