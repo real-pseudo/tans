@@ -2,8 +2,8 @@
 #define HIT_H
 
 #include "TObject.h"
-#include "Cilindro.h"
-#include "Particella.h"
+#include "geometry.h"
+#include "particle.h"
 
 class hit;
 

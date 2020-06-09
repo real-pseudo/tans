@@ -11,7 +11,7 @@
 #include "TRandom3.h"
 #include "TMath.h"
 #include "hit.h"
-#include "Cilindro.h"
+#include "geometry.h"
 
 class ClonesArray {
 public:

@@ -1,14 +1,15 @@
 #include <TROOT.h>
 #include <Riostream.h>
 #include <vector>
-
+#include <cstdlib>
 
 void loader() {   
     std::vector<std::string> files {
-        "Cilindro.cxx", 
+        "geometry.cxx", 
         "Utility.cxx",
         "hit.cxx", 
-        "Particella.cxx"
+        "particle.cxx"
+        
     };
     
     for (const auto& current_file: files) {
@@ -16,6 +17,7 @@ void loader() {
         gROOT->ProcessLine(command.c_str());
     }
 
-    gROOT->ProcessLine(".X GeneraTree.C");
-    gROOT->ProcessLine(".X LeggiTree.C");
+    gROOT->ProcessLine(".X simulation.C");
+    gROOT->ProcessLine(".X reconstruction.C");
+    gROOT->ProcessLine(".X graphs.C");
 }
