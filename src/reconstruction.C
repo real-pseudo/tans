@@ -29,8 +29,8 @@ void reconstruction() {
   //Dichiarazione NTupla e file in cui salvare i vertici
   TFile fout("vtxreco.root","recreate");
 //  TNtuple *nt = new TNtuple("nt","vertices","zsim:zrec:diff");
-	TNtuple nt("nt","vertices","zsim:zrec:diff:mult");
-	TNtuple *save_rec1 = new TNtuple("z_sim","vertices","zsimtot:multtot");
+	TNtuple nt_rec("nt_rec","vertices","zsim:zrec:diff:mult");
+	TNtuple *nt_sim = new TNtuple("z_sim","vertices","zsimtot:multtot");
 
   //Dichiarazione TClonesArray
   static Vertex point;
@@ -75,12 +75,12 @@ void reconstruction() {
     tree->GetEvent(i);
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
-    save_rec1->Fill(point.Z,point.mult);
+    nt_sim->Fill(point.Z,point.mult);
 		
     cout<<"evento "<<i<<endl;
 		#if DEBUG
-    cout<<"Entries-hit1: "<<entries1<<endl;
-    cout<<"Entries-hit2: "<<entries2<<endl;
+    //cout<<"Entries-hit1: "<<entries1<<endl;
+    //cout<<"Entries-hit2: "<<entries2<<endl;
     cout<<"vtx: "<<point.Z<<endl;
 		#endif
 
@@ -95,11 +95,12 @@ void reconstruction() {
       for(int k=0;k<entries1;k++){
         hit *hit1_event = (hit*) hit_det1.ptr->At(k);
         deltaphi = abs((hit2_event->getPhi() - hit1_event->getPhi()));
+
         //determino il vertice come intersezione della retta passante per i due hit con l asse del fascio(z)
         if(deltaphi<DELTAPHI){
           reconstruction_vtx(rec_vtx[count],*hit1_event,*hit2_event,det1,deltaR);
 					#if DEBUG
-          //cout<<"vtx ricostruito: "<<rec_vtx[count].Z<<endl;
+          cout<<"vtx ricostruito: "<<rec_vtx[count].Z<<endl;
 					#endif
           count++;
         }
@@ -109,7 +110,6 @@ void reconstruction() {
     //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
     double width = 0.001;
     double bin_extreme = 121;
-    //double bin_extreme = 200;
     double nbin=(2*bin_extreme)/width;
     //TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+1,-bin_extreme-(width/2.),bin_extreme+(width/2.));
     TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+1,-bin_extreme-(width/2.),bin_extreme+(width/2.));
@@ -127,7 +127,10 @@ void reconstruction() {
       #endif 
 		}
 		int nbins=0;
-		
+
+		//trackZ->Draw();
+		//new TCanvas();
+
     //Trovo il massimo
     bin_peak = trackZ->GetMaximumBin();
 		//Controllo se c'è più di un massimo
@@ -163,7 +166,7 @@ void reconstruction() {
       //if (i % 1000 == 0)
         cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
 
-        nt.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
+        nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
         z->Fill(most_prob_Z-point.Z);
     	}
 
@@ -173,19 +176,19 @@ void reconstruction() {
       }
 
 
-    delete trackZ;
+   delete trackZ;
 
   }
   //z->SetMarkerStyle(21);
   //z->SetMarkerSize(.4);
-  z->Draw();
+  //z->Draw();
 
   cout<<"picchi non ric: "<<c<<endl;
 	cout<< "rebin utili" << success<< endl;
   fout.Write();
   fout.Close();
 
-/*   //grafica
+/*//grafica
   //leggo ntuple
   TFile filin("vtxreco.root");
   float sim,rec,diff_z,mult_rec,mult_sim,sim_z;
@@ -201,11 +204,11 @@ void reconstruction() {
   double sigma_z=5.3; //caratteristico del vtx generato
   int nsim=nt1->GetEntries();
   int nrec=pippo->GetEntries();
-  int n=14;
-  double efficiency[14]={0.} , eff[14]={0};
-  double mult_int[14]={0.};
-  int multiplicity[14]={2,4,6,8,10,15,20,25,30,35,40,45,50,55};//range di molteplicità
-  for(int range=0;range<14;range++){
+  int n=12;
+  double efficiency[12]={0.} , eff[14]={0};
+  double mult_int[12]={0.};
+  int multiplicity[12]={4,6,10,15,20,25,30,35,40,45,50,55};//range di molteplicità
+  for(int range=0;range<12;range++){
 	  double count_sim = 0. , count_rec = 0. , count_sigmatot = 0., count_sigma = 0;
 //se il valore di molteplicità ricada nei range stabiliti allora si aumenta il contatore degli eventi simulati
 	  for(int i=0;i<nsim;i++){
@@ -261,7 +264,7 @@ void reconstruction() {
    gr2->GetYaxis()->SetTitle("Efficienza [cm]");
    gr2->SetMarkerStyle(21);
    gr2->Draw("APL");
- */
+*/
 
 
 
