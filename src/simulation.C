@@ -14,7 +14,7 @@
 #include "Utility.h"
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 10
+#define NUMBER_OF_EVENTS 10000
 
 void simulation() {
 	bool multScattering = true;
@@ -185,7 +185,7 @@ void simulation() {
 				add_noise(hits2, det2, count_hit2, hit_det2);
 			}
 
-
+//cout<< "evento: "<< i<<endl;
 		tree->Fill();
 
 		particles.clear(); 

@@ -70,10 +70,12 @@ void graphs() {
 	  efficiency[range-1]=count_sigma/count_sigmatot;
 	  eff->Fill(mult_eff[range-1],efficiency[range-1]);
 	  }*/
-	  if(count_sim!=0 && count_rec!=0){
+	  if(count_sim!=0){
 	  	  mult_eff[range-1]=range;
-	  	  cout<<mult_eff[range-1]<<endl;
-	  	  efficiency[range-1]=count_rec/count_sim;
+	  	  //cout<< "molteplicita" << mult_eff[range-1]<<endl;
+	  	  efficiency[range-1]= ((double) count_rec) / count_sim;
+        /*cout << "conteggi registrati: " << count_rec << "---- conteggi simulati: "<<
+                  count_sim << "efficienza" <<efficiency[range-1]<<endl;*/
 	  	  eff->Fill(mult_eff[range-1],efficiency[range-1]);
 	  }
   }

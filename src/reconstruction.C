@@ -16,7 +16,7 @@
 #include <vector>
 #include "TGraph.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define ARRAY_SIZE 100
 #define DELTAPHI 0.006 //6 mrad differenza di phi oltre la quale i due hit non possono appartenere allo stesso vertice
@@ -75,13 +75,13 @@ void reconstruction() {
     tree->GetEvent(i);
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
-    nt_sim->Fill(point.Z,point.mult);
+    //nt_sim->Fill(point.Z,point.mult);
 		
-    cout<<"evento "<<i<<endl;
+    //cout<<"evento "<<i<<endl;
 		#if DEBUG
     //cout<<"Entries-hit1: "<<entries1<<endl;
     //cout<<"Entries-hit2: "<<entries2<<endl;
-    cout<<"vtx: "<<point.Z<<endl;
+    cout<<"vtx: "<<point.Z<< "---"<<point.mult <<endl;
 		#endif
 
     //definisco un vettore di vertici in cui raccogliere i vertici ricostruiti
@@ -99,13 +99,12 @@ void reconstruction() {
         //determino il vertice come intersezione della retta passante per i due hit con l asse del fascio(z)
         if(deltaphi<DELTAPHI){
           reconstruction_vtx(rec_vtx[count],*hit1_event,*hit2_event,det1,deltaR);
-					#if DEBUG
-          cout<<"vtx ricostruito: "<<rec_vtx[count].Z<<endl;
-					#endif
           count++;
         }
       }
     }
+    if(count>0)
+      nt_sim->Fill(point.Z,point.mult);
     //MANCA IL CALCOLO DEL MASSIMO-tracklets DEI VARI VALORI DI Zrec, PER RIEMPIRE L'NTUPLA HO USATO L'ULTIMO VALORE DI Z RICOSTRUITO
     //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
     double width = 0.001;
@@ -121,10 +120,13 @@ void reconstruction() {
     for(int i=0;i<count;i++){	
       trackZ->Fill(rec_vtx[i].Z);
       #if DEBUG
+     
       TAxis *xaxis = trackZ->GetXaxis();
       Int_t binx = xaxis->FindBin(rec_vtx[i].Z); 
       cout<<"vtx ricostruito: "<<rec_vtx[i].Z << "pos:"<<binx<< "  centro del bin:" << trackZ->GetBinCenter(binx) <<endl;
+      
       #endif 
+
 		}
 		int nbins=0;
 
@@ -136,11 +138,11 @@ void reconstruction() {
 		//Controllo se c'è più di un massimo
 		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
 		//Se c'è più di un max fai un rebin massimo 2 volte 
-		for(int rebin=1; twopeaks && rebin < 3; rebin++){
+		for(int rebin=1; twopeaks && rebin < 4; rebin++){
 			trackZ->Rebin(3);
 			//trackZ->Rebin(2);
 			nbins=trackZ->GetNbinsX();
-			cout << "new nbins: " << nbins<< endl;
+			//cout << "new nbins: " << nbins<< endl;
     	bin_peak = trackZ->GetMaximumBin();
     	//Verifico nuovamente se il picco è unico
     	twopeaks = more_peaks(trackZ, nbin, bin_peak);
@@ -163,11 +165,14 @@ void reconstruction() {
 
     	most_prob_Z = sum/ncounts;
 
-      //if (i % 1000 == 0)
-        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
+      
+        //cout<< "evento: " << i <<endl;
+        //cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z << endl;
 
-        nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
-        z->Fill(most_prob_Z-point.Z);
+        
+        //if(point.mult > 1)
+      z->Fill(most_prob_Z-point.Z);
+      nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult, point.Z);
     	}
 
       else{
