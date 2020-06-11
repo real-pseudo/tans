@@ -16,7 +16,7 @@
 #include <vector>
 #include "TGraph.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define ARRAY_SIZE 100
 #define DELTAPHI 0.006 //6 mrad differenza di phi oltre la quale i due hit non possono appartenere allo stesso vertice
@@ -162,7 +162,7 @@ void reconstruction() {
 
       //if (i % 1000 == 0)
         cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z <<endl;
-
+        cout <<point.mult<<endl;
         nt.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
         z->Fill(most_prob_Z-point.Z);
     	}

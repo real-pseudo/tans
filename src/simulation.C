@@ -14,7 +14,7 @@
 #include "Utility.h"
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 5000
+#define NUMBER_OF_EVENTS 10
 
 void simulation() {
 	bool multScattering = true;
