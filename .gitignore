@@ -2,3 +2,5 @@ src/*.so
 src/*.d
 src/*.pcm
 src/htree.root
+src/vtxreco.root
+src/trackZ

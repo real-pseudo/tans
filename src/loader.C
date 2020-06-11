@@ -19,5 +19,5 @@ void loader() {
 
     gROOT->ProcessLine(".X simulation.C");
     gROOT->ProcessLine(".X reconstruction.C");
-    gROOT->ProcessLine(".X graphs_backup.C");
+    gROOT->ProcessLine(".X graphs.C");
 }
