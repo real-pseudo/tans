@@ -14,7 +14,7 @@
 #include "Utility.h"
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 10000
+#define NUMBER_OF_EVENTS 1
 
 void simulation() {
 	bool multScattering = true;
@@ -85,11 +85,11 @@ void simulation() {
 			//Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction
 			Particella direction(*new(particles.array[j]) Particella(j));
 
-			/*
+			
 			cout  << "\nDirezione_Particella #" << direction.getLabel() <<
 			"(event " << i << ") " <<
 			": phi = " << direction.getPhi() <<
-			"; theta = " << direction.getTheta() << endl;*/ 
+			"; theta = " << direction.getTheta() << endl;
 		
 
 			
@@ -101,14 +101,16 @@ void simulation() {
 				non ci sono HIT su nessuno dei due rivelatori*/
 				if(hitBP.acceptance(beampipe)){
 					direction.scattering();//cambio angoli in seguito a MS
-		//			cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
 					change_vertex(vtx_hit, hitBP); //prende l'intersezione come nuovo vertice
 					//crea particella che è copia di direction e la salva nell'array
 					new(scatter_bp.array[count_bp]) Particella(direction);
+					cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
+
 					count_bp++;
 
 					/*Interazione con il primo rivelatore*/
 					hits1.traject_intersection(vtx_hit, det1, direction);
+					
 					/*Se il punto di intersezione sul primo rivelatore soddisfa l'accettanza si riempe hit_det1.
 					Se non è dentro al primo non può essere nel secondo: man mano che si allontana dal
 					vertice è sempre più esterno come punto su asse z*/
@@ -125,11 +127,13 @@ void simulation() {
 						smearing(hits1, det1);
 						new(hit_det1.array[count_hit1]) hit(hits1) ;
 						count_hit1++;
+						cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
 
 						hits2.traject_intersection(vtx_hit, det2, direction);
 						if(hits2.acceptance(det2)){
 		//					cout <<"Z2:" <<endl;
 		//					hits2.PrintStatus();
+							
 
 							smearing(hits2, det2);
 							new(hit_det2.array[count_hit2])hit(hits2);

@@ -16,7 +16,7 @@
 #include <vector>
 #include "TGraph.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define ARRAY_SIZE 100
 #define DELTAPHI 0.006 //6 mrad differenza di phi oltre la quale i due hit non possono appartenere allo stesso vertice
@@ -95,7 +95,7 @@ void reconstruction() {
       for(int k=0;k<entries1;k++){
         hit *hit1_event = (hit*) hit_det1.ptr->At(k);
         deltaphi = abs((hit2_event->getPhi() - hit1_event->getPhi()));
-
+        
         //determino il vertice come intersezione della retta passante per i due hit con l asse del fascio(z)
         if(deltaphi<DELTAPHI){
           reconstruction_vtx(rec_vtx[count],*hit1_event,*hit2_event,det1,deltaR);
@@ -103,8 +103,9 @@ void reconstruction() {
         }
       }
     }
-    if(count>0)
-      nt_sim->Fill(point.Z,point.mult);
+    
+   
+    nt_sim->Fill(point.Z,point.mult);
     //MANCA IL CALCOLO DEL MASSIMO-tracklets DEI VARI VALORI DI Zrec, PER RIEMPIRE L'NTUPLA HO USATO L'ULTIMO VALORE DI Z RICOSTRUITO
     //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
     double width = 0.001;
@@ -144,6 +145,7 @@ void reconstruction() {
 			nbins=trackZ->GetNbinsX();
 			//cout << "new nbins: " << nbins<< endl;
     	bin_peak = trackZ->GetMaximumBin();
+     
     	//Verifico nuovamente se il picco è unico
     	twopeaks = more_peaks(trackZ, nbin, bin_peak);
 			if(twopeaks==false){
@@ -167,12 +169,13 @@ void reconstruction() {
 
       
         //cout<< "evento: " << i <<endl;
-        //cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z << endl;
-
+        #if DEBUG 
+        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z << endl;
+        #endif
         
         //if(point.mult > 1)
       z->Fill(most_prob_Z-point.Z);
-      nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult, point.Z);
+      nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
     	}
 
       else{
@@ -184,6 +187,7 @@ void reconstruction() {
    delete trackZ;
 
   }
+  
   //z->SetMarkerStyle(21);
   //z->SetMarkerSize(.4);
   //z->Draw();
