@@ -1,5 +1,7 @@
 #include "Utility.h"
 
+#define DEBUG 0
+
 //___________________________________________________________________________
 //Genera la molteplicità delle particelle da una distribuzione data
 int getMultiplicity(){
@@ -48,7 +50,7 @@ void add_noise(hit& interact, const Cilindro& detector, double count_hit, Clones
 bool more_peaks(TH1D* histo, const int nbin, const int peak){
 
 	for(int v=0;v<nbin+1;v++){
-		if(v!=peak && histo->GetBinContent(v) == histo->GetBinContent(peak) && abs(peak-v) >= 4){
+		if(v!=peak && histo->GetBinContent(v) == histo->GetBinContent(peak)&& abs(v-peak)>1){
 			return true;
 		}
 	}

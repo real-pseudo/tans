@@ -73,7 +73,7 @@ void Particella::scattering(){
 	//angolo di scattering con rms 1 mrad
     double theta_0 = gRandom->Gaus(0.,0.001);
     double stheta_0 = TMath::Sin(theta_0), ctheta_0 = TMath::Cos(phi_0);;
-    cout<<"theta0 :  "<<theta_0<< "phi0:" << phi_0 <<endl;
+ //   cout<<"theta0 :  "<<theta_0<< "phi0:" << phi_0 <<endl;
     //matrice di rotazione
     double m_rot[3][3] = {
         {-sphi, -cphi * ctheta, stheta * cphi},

@@ -16,7 +16,7 @@
 #include <vector>
 #include "TGraph.h"
 
-#define DEBUG 1
+
 
 #define ARRAY_SIZE 100
 #define DELTAPHI 0.006 //6 mrad differenza di phi oltre la quale i due hit non possono appartenere allo stesso vertice
@@ -39,7 +39,6 @@ void reconstruction() {
   ClonesArray hit_det2("hit", ARRAY_SIZE);
 
   int c=0;
-	int success=0;
 
   //Apertura file di input
   TFile hfile("htree.root");
@@ -67,23 +66,30 @@ void reconstruction() {
   int entries1 = 0, entries2 = 0;
   double deltaR=(det2.getRadius()- det1.getRadius());
   double deltaphi;
-  TH1D *z = new TH1D("z","istogramma ",201,-0.2,0.2);//istogramma zrec-zsim
+  TH1D *z = new TH1D("z","istogramma ",91,-0.18,0.18);//istogramma zrec-zsim
   z->SetDirectory(0);
- 
+
 
   for(int i=0 ;i < evsim; i++) {
+	  std::vector<double> recz;
     tree->GetEvent(i);
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
-    //nt_sim->Fill(point.Z,point.mult);
-		
-    //cout<<"evento "<<i<<endl;
+    nt_sim->Fill(point.Z,point.mult);
+    if(i%1000==0)
+      cout<<"Ricostruisco evento "<<i<<endl;
 		#if DEBUG
-    //cout<<"Entries-hit1: "<<entries1<<endl;
-    //cout<<"Entries-hit2: "<<entries2<<endl;
+    cout<<"Entries-hit1: "<<entries1<<endl;
+    cout<<"Entries-hit2: "<<entries2<<endl;
     cout<<"vtx: "<<point.Z<< "---"<<point.mult <<endl;
 		#endif
 
+    double width = 0.1;
+    double bin_extreme = 36.4;
+    double nbin=(2*bin_extreme)/width;
+
+    TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+1,-bin_extreme-(width/2.),bin_extreme+(width/2.));
+    trackZ->SetDirectory(0);
     //definisco un vettore di vertici in cui raccogliere i vertici ricostruiti
     Vertex rec_vtx[entries1*entries2];
     int count = 0;
@@ -94,186 +100,111 @@ void reconstruction() {
       hit *hit2_event = (hit*) hit_det2.ptr->At(j);
       for(int k=0;k<entries1;k++){
         hit *hit1_event = (hit*) hit_det1.ptr->At(k);
+        //cout<<"phi2: "<<hit2_event->getPhi()<<"|||||||||"<<"phi1: "<<hit1_event->getPhi()<<endl;
         deltaphi = abs((hit2_event->getPhi() - hit1_event->getPhi()));
         
         //determino il vertice come intersezione della retta passante per i due hit con l asse del fascio(z)
-        if(deltaphi<DELTAPHI){
+        if(deltaphi<=DELTAPHI){
+        	//cout<<"phi2: "<<hit2_event->getPhi()<<"|||||||||"<<"phi1: "<<hit1_event->getPhi()<<endl;
+        	//cout<<deltaphi<<endl;
           reconstruction_vtx(rec_vtx[count],*hit1_event,*hit2_event,det1,deltaR);
+          trackZ->Fill(rec_vtx[count].Z);
+          recz.push_back(rec_vtx[count].Z);
+
           count++;
         }
       }
     }
     
+    //RICERCA DEL PICCO
    
-    nt_sim->Fill(point.Z,point.mult);
-    //MANCA IL CALCOLO DEL MASSIMO-tracklets DEI VARI VALORI DI Zrec, PER RIEMPIRE L'NTUPLA HO USATO L'ULTIMO VALORE DI Z RICOSTRUITO
-    //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
-    double width = 0.001;
-    double bin_extreme = 121;
-    double nbin=(2*bin_extreme)/width;
-    //TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+1,-bin_extreme-(width/2.),bin_extreme+(width/2.));
-    TH1D *trackZ = new TH1D("VertrecZ","tracklets",nbin+1,-bin_extreme-(width/2.),bin_extreme+(width/2.));
-    trackZ->SetDirectory(0);
     int bin_peak = 0;
     double most_prob_Z = 0;
+    double average =0;
 
 		//Riempimento istogramma dei tracklets
-    for(int i=0;i<count;i++){	
-      trackZ->Fill(rec_vtx[i].Z);
-      #if DEBUG
-     
+    #if DEBUG
+    for(int i=0;i<count;i++){
       TAxis *xaxis = trackZ->GetXaxis();
       Int_t binx = xaxis->FindBin(rec_vtx[i].Z); 
       cout<<"vtx ricostruito: "<<rec_vtx[i].Z << "pos:"<<binx<< "  centro del bin:" << trackZ->GetBinCenter(binx) <<endl;
       
-      #endif 
-
 		}
-		int nbins=0;
-
-		//trackZ->Draw();
-		//new TCanvas();
+    #endif
+    std::sort(recz.begin(),recz.end());
+    
 
     //Trovo il massimo
     bin_peak = trackZ->GetMaximumBin();
 		//Controllo se c'è più di un massimo
 		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
-		//Se c'è più di un max fai un rebin massimo 2 volte 
-		for(int rebin=1; twopeaks && rebin < 4; rebin++){
-			trackZ->Rebin(3);
-			//trackZ->Rebin(2);
-			nbins=trackZ->GetNbinsX();
-			//cout << "new nbins: " << nbins<< endl;
-    	bin_peak = trackZ->GetMaximumBin();
-     
-    	//Verifico nuovamente se il picco è unico
-    	twopeaks = more_peaks(trackZ, nbin, bin_peak);
-			if(twopeaks==false){
-				++success;
-			}
+    if(recz.size()>1 && twopeaks==false && (recz.size()>2 || abs(recz[0]-recz[1])<(2*width))){
 
-		}
-
-
-    //Calcolo la media intorno al bin con il picco
-    if(twopeaks == false) {
-    //cout<<"calcolomedia"<<endl;
-    	double sum=0;
-    	double ncounts=0;
-    	for(int i=bin_peak-2; i<bin_peak+3; i++) {
-    		sum += trackZ->GetBinContent(i)*trackZ->GetBinCenter(i);
-    		ncounts += trackZ->GetBinContent(i);
-    	}
-
-    	most_prob_Z = sum/ncounts;
-
+      double bin_center = trackZ->GetBinCenter(bin_peak);
+      //cout << "centro del bin"<< bin_center <<endl;
+      //media usando il vector  
       
-        //cout<< "evento: " << i <<endl;
-        #if DEBUG 
-        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z << endl;
-        #endif
-        
-        //if(point.mult > 1)
-      z->Fill(most_prob_Z-point.Z);
-      nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
-    	}
+      double left_value = bin_center - width,
+            right_value = bin_center + width; 
 
-      else{
-    	  c++;
-        //cout << "vtx originale:"<< point.Z << " -- vtx non ricostruito??: "<< most_prob_Z <<endl;
+      #if DEBUG
+      cout << "il mio vettore ha " << recz.size() << " elementi: "; 
+      
+      for (auto v: recz) {
+        cout << v << " ";
       }
+      cout << endl; 
+  
+      cout << "cerco intervallo " << left_value << " " << right_value << endl; 
+      #endif
+      auto it_left = std::lower_bound(recz.begin(), recz.end(), left_value);
+      auto it_right = std::upper_bound(recz.begin(), recz.end(), right_value);
 
 
-   delete trackZ;
+      if (it_right == recz.end())
+        it_right = recz.end() - 1; 
+      else 
+        --it_right; 
+        
+      int n_elements = it_right - it_left + 1; 
+      average = std::accumulate(it_left, it_right + 1, 0.0f) / n_elements; 
+      #if DEBUG
+      cout << "inizia in " << *it_left << " e finisce in " << *it_right << endl;
+      cout << "nell'intervallo ci sono " << n_elements << "elementi" << endl; 
+      cout << "valore medio nell'intervallo: " << average << endl; 
+      #endif
+    
+    //#if DEBUG 
+    if(i%1000==0)
+      cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< average << endl;
+    //#endif
+    
+    //if(point.mult > 1)
+    z->Fill(average-point.Z);
+    nt_rec.Fill(point.Z, average,average-point.Z,point.mult);
+  }
+
+  else{
+    c++;
+    //cout << "vtx originale:"<< point.Z << " -- vtx non ricostruito??: "<< most_prob_Z <<endl;
+  }
+
+
+  delete trackZ;
 
   }
+
+ 
   
   //z->SetMarkerStyle(21);
   //z->SetMarkerSize(.4);
-  //z->Draw();
+  z->Draw();
 
   cout<<"picchi non ric: "<<c<<endl;
-	cout<< "rebin utili" << success<< endl;
   fout.Write();
   fout.Close();
 
-/*//grafica
-  //leggo ntuple
-  TFile filin("vtxreco.root");
-  float sim,rec,diff_z,mult_rec,mult_sim,sim_z;
-  TNtuple *pippo = (TNtuple*)filin.Get("nt");
-      pippo->SetBranchAddress("zsim",&sim);
-      pippo->SetBranchAddress("zrec",&rec);
-      pippo->SetBranchAddress("diff",&diff_z);
-      pippo->SetBranchAddress("mult",&mult_rec);
-  TNtuple *nt1 = (TNtuple*)filin.Get("z_sim");
-      nt1->SetBranchAddress("zsimtot",&sim_z);
-      nt1->SetBranchAddress("multtot",&mult_sim);
 
-  double sigma_z=5.3; //caratteristico del vtx generato
-  int nsim=nt1->GetEntries();
-  int nrec=pippo->GetEntries();
-  int n=12;
-  double efficiency[12]={0.} , eff[14]={0};
-  double mult_int[12]={0.};
-  int multiplicity[12]={4,6,10,15,20,25,30,35,40,45,50,55};//range di molteplicità
-  for(int range=0;range<12;range++){
-	  double count_sim = 0. , count_rec = 0. , count_sigmatot = 0., count_sigma = 0;
-//se il valore di molteplicità ricada nei range stabiliti allora si aumenta il contatore degli eventi simulati
-	  for(int i=0;i<nsim;i++){
-		  nt1->GetEvent(i);
-		  if((mult_sim>multiplicity[range]) && ((mult_sim<=multiplicity[range+1]))){
-			  count_sim++;
-			  if(abs(sim_z)<sigma_z){
-				  count_sigmatot++;
-			  }
-		  }
-	  }
-	  //se il valore di molteplicità ricada nei range stabiliti allora si aumenta il contatore degli eventi ricostruiti
-	  for(int j=0;j<nrec;j++){
-		  pippo->GetEvent(j);
-		  if((mult_rec>multiplicity[range]) && ((mult_rec<=multiplicity[range+1]))){
-		  	  count_rec++;
-		  	if(abs(sim)<sigma_z){
-		  					  count_sigma++;
-		  				  }
-
-		  }
-	  }
-
-	  if(count_sim!=0 && count_rec!=0){
-		  cout<<"ev sim= "<<count_sim<<"ev_rec= "<<count_rec<<endl;
-		  efficiency[range]=count_rec/count_sim;
-
-	  }
-
-	  if(count_sigmatot!=0 && count_sigma!=0){
-		  eff[range]=count_sigma/count_sigmatot;
-
-	  }
-	  mult_int[range]=(multiplicity[range]+multiplicity[range+1])/2.;
-
-  }
-  new TCanvas("Graph1","Efficienza Vs Molteplicita'",200,10,800,500);
-  TGraph *gr1=new TGraph(n-1,mult_int,efficiency);
-      gr1->SetTitle("Effficienza vs molteplcita'");
-      gr1->GetXaxis()->SetTitle("Molteplicita'");
-      gr1->GetYaxis()->SetTitle("Efficienza [cm]");
-      gr1->SetMarkerColor(kBlack);
-      gr1->SetMarkerStyle(21);
-
-  //    new TCanvas("Graph1","efficienza Vs Molteplicita'",200,10,800,500);
-
-      gr1->Draw("APL");
-
-   new TCanvas("Graph2","efficienza Vs Molteplicita'(Z < 3sigma)",200,10,800,500);
-   TGraph *gr2=new TGraph(n-1,mult_int,eff);
-   gr2->SetTitle("Efficienza vs molteplcita'(Z < 3sigma)");
-   gr2->GetXaxis()->SetTitle("Molteplicita'");
-   gr2->GetYaxis()->SetTitle("Efficienza [cm]");
-   gr2->SetMarkerStyle(21);
-   gr2->Draw("APL");
-*/
 
 
 
