@@ -69,18 +69,19 @@ void reconstruction() {
   double deltaphi;
   TH1D *z = new TH1D("z","istogramma ",201,-0.2,0.2);//istogramma zrec-zsim
   z->SetDirectory(0);
- 
+  //std::vector<double> recz(100);
 
   for(int i=0 ;i < evsim; i++) {
+	std::vector<double> recz;
     tree->GetEvent(i);
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
-    //nt_sim->Fill(point.Z,point.mult);
+    nt_sim->Fill(point.Z,point.mult);
 		
-    //cout<<"evento "<<i<<endl;
+    cout<<"evento "<<i<<endl;
 		#if DEBUG
-    //cout<<"Entries-hit1: "<<entries1<<endl;
-    //cout<<"Entries-hit2: "<<entries2<<endl;
+    cout<<"Entries-hit1: "<<entries1<<endl;
+    cout<<"Entries-hit2: "<<entries2<<endl;
     cout<<"vtx: "<<point.Z<< "---"<<point.mult <<endl;
 		#endif
 
@@ -94,17 +95,21 @@ void reconstruction() {
       hit *hit2_event = (hit*) hit_det2.ptr->At(j);
       for(int k=0;k<entries1;k++){
         hit *hit1_event = (hit*) hit_det1.ptr->At(k);
+        //cout<<"phi2: "<<hit2_event->getPhi()<<"|||||||||"<<"phi1: "<<hit1_event->getPhi()<<endl;
         deltaphi = abs((hit2_event->getPhi() - hit1_event->getPhi()));
 
         //determino il vertice come intersezione della retta passante per i due hit con l asse del fascio(z)
-        if(deltaphi<DELTAPHI){
+        if(deltaphi<=DELTAPHI){
+        	//cout<<"phi2: "<<hit2_event->getPhi()<<"|||||||||"<<"phi1: "<<hit1_event->getPhi()<<endl;
+        	//cout<<deltaphi<<endl;
           reconstruction_vtx(rec_vtx[count],*hit1_event,*hit2_event,det1,deltaR);
           count++;
         }
       }
     }
-    if(count>0)
-      nt_sim->Fill(point.Z,point.mult);
+    cout<<count<<endl;
+   // if(count>0)
+      //nt_sim->Fill(point.Z,point.mult);
     //MANCA IL CALCOLO DEL MASSIMO-tracklets DEI VARI VALORI DI Zrec, PER RIEMPIRE L'NTUPLA HO USATO L'ULTIMO VALORE DI Z RICOSTRUITO
     //PRIMA DI PASSARE ALL'EVENTO SUCCESSIVO
     double width = 0.001;
@@ -117,7 +122,11 @@ void reconstruction() {
     double most_prob_Z = 0;
 
 		//Riempimento istogramma dei tracklets
-    for(int i=0;i<count;i++){	
+    for(int i=0;i<count;i++){
+    	//cout<<rec_vtx[i].Z<<endl;
+    	recz.push_back(rec_vtx[i].Z);
+    	cout<<"disordine "<<recz.at(i)<<endl;
+
       trackZ->Fill(rec_vtx[i].Z);
       #if DEBUG
      
@@ -128,6 +137,32 @@ void reconstruction() {
       #endif 
 
 		}
+    int N = recz.size();
+    //cout<<"dimensione: "<<N<<endl;
+
+//ordino vettore con bubble
+      double temp=0.;
+      for(int j=0;j<N-1;j++){
+    	 for(int k=0;k<N-1;k++){
+    		if(recz[k]>recz[k+1]){
+    			temp=recz[k];
+    			recz[k]=recz[k+1];
+    			recz[k+1]=temp;
+    		}
+    	 }
+     }
+     cout<<"Array ordinato:"<<endl;
+    	for(int i=0;i<N;i++){
+    		cout<<"ordine "<<recz.at(i)<<endl;
+    	}
+
+  /* NON FUNZIONA
+   * std::sort (recz.begin(), recz.end());
+    	for(int i=0;i<count;i++){
+    	    	cout<<rec_vtx[i].Z<<endl;
+
+    	    	cout<<"ordine "<<recz.at(i)<<endl;
+    	}*/
 		int nbins=0;
 
 		//trackZ->Draw();
@@ -138,7 +173,7 @@ void reconstruction() {
 		//Controllo se c'è più di un massimo
 		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
 		//Se c'è più di un max fai un rebin massimo 2 volte 
-		for(int rebin=1; twopeaks && rebin < 4; rebin++){
+		for(int rebin=1; twopeaks && rebin < 3; rebin++){
 			trackZ->Rebin(3);
 			//trackZ->Rebin(2);
 			nbins=trackZ->GetNbinsX();
@@ -166,13 +201,13 @@ void reconstruction() {
     	most_prob_Z = sum/ncounts;
 
       
-        //cout<< "evento: " << i <<endl;
-        //cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z << endl;
+        cout<< "evento: " << i <<endl;
+        cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< most_prob_Z << endl;
 
         
         //if(point.mult > 1)
       z->Fill(most_prob_Z-point.Z);
-      nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult, point.Z);
+      nt_rec.Fill(point.Z, most_prob_Z,most_prob_Z-point.Z,point.mult);
     	}
 
       else{

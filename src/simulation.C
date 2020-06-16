@@ -14,7 +14,7 @@
 #include "Utility.h"
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 10000
+#define NUMBER_OF_EVENTS 5
 
 void simulation() {
 	bool multScattering = true;
@@ -74,7 +74,7 @@ void simulation() {
 		point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
 
 		//if (i % 1000 == 0)
-			//cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl;
+			cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl;
 
 		/*Conteggio delle interazioni con i rivelatori e con la beampipe*/
 		int count_hit1 = 0, count_hit2 = 0, count_bp = 0, count_det1 = 0;
@@ -85,13 +85,13 @@ void simulation() {
 			//Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction
 			Particella direction(*new(particles.array[j]) Particella(j));
 
-			/*
-			cout  << "\nDirezione_Particella #" << direction.getLabel() <<
+
+			/*cout  << "\nDirezione_Particella #" << direction.getLabel() <<
 			"(event " << i << ") " <<
 			": phi = " << direction.getPhi() <<
-			"; theta = " << direction.getTheta() << endl;*/ 
+			"; theta = " << direction.getTheta() << endl;
 		
-
+*/
 			
 			if(multScattering){
 				/*Considero l'interazione con la beampipe solo in caso di Multiple Scattering*/
@@ -101,7 +101,7 @@ void simulation() {
 				non ci sono HIT su nessuno dei due rivelatori*/
 				if(hitBP.acceptance(beampipe)){
 					direction.scattering();//cambio angoli in seguito a MS
-		//			cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
+					//cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
 					change_vertex(vtx_hit, hitBP); //prende l'intersezione come nuovo vertice
 					//crea particella che è copia di direction e la salva nell'array
 					new(scatter_bp.array[count_bp]) Particella(direction);
@@ -117,6 +117,7 @@ void simulation() {
 		//				cout <<"Z1:"<<endl;
 		//				hits1.PrintStatus();
 						direction.scattering(); //modifica la direzione della particella in seguito al MS
+						//cout << "2)newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
 						change_vertex(vtx_hit, hits1); //prende l'intersezione come nuovo vertice
 						new(scatter_det1.array[count_det1]) Particella(direction);
 						count_det1++;
