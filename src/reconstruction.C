@@ -76,7 +76,7 @@ void reconstruction() {
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
     nt_sim->Fill(point.Z,point.mult);
-    if(i%1000==0)
+    //if(i%1000==0)
       cout<<"Ricostruisco evento "<<i<<endl;
 		#if DEBUG
     cout<<"Entries-hit1: "<<entries1<<endl;
@@ -115,8 +115,9 @@ void reconstruction() {
         }
       }
     }
-    
-    //RICERCA DEL PICCO
+    //trackZ->Draw();
+    //new TCanvas();
+	//RICERCA DEL PICCO
    
     int bin_peak = 0;
     double most_prob_Z = 0;
@@ -127,19 +128,19 @@ void reconstruction() {
     for(int i=0;i<count;i++){
       TAxis *xaxis = trackZ->GetXaxis();
       Int_t binx = xaxis->FindBin(rec_vtx[i].Z); 
-      cout<<"vtx ricostruito: "<<rec_vtx[i].Z << "pos:"<<binx<< "  centro del bin:" << trackZ->GetBinCenter(binx) <<endl;
+      cout<<"vtx tracklets: "<<rec_vtx[i].Z << "pos:"<<binx<< "  centro del bin:" << trackZ->GetBinCenter(binx) <<endl;
       
 		}
     #endif
     std::sort(recz.begin(),recz.end());
     
-
+    cout << "il mio vettore ha " << recz.size() << " elementi: ";
     //Trovo il massimo
     bin_peak = trackZ->GetMaximumBin();
 		//Controllo se c'è più di un massimo
 		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
-    if(recz.size()>1 && twopeaks==false && (recz.size()>2 || abs(recz[0]-recz[1])<(2*width))){
-
+    //if(recz.size()>1 && twopeaks==false && (recz.size()>2 || abs(recz[0]-recz[1])<(2*width))){
+		if(recz.size()>1 && twopeaks==false ){
       double bin_center = trackZ->GetBinCenter(bin_peak);
       //cout << "centro del bin"<< bin_center <<endl;
       //media usando il vector  
@@ -159,12 +160,14 @@ void reconstruction() {
       #endif
       auto it_left = std::lower_bound(recz.begin(), recz.end(), left_value);
       auto it_right = std::upper_bound(recz.begin(), recz.end(), right_value);
-
+      //cout << "left " << *it_left << " right " << *it_right << endl;
 
       if (it_right == recz.end())
         it_right = recz.end() - 1; 
       else 
         --it_right; 
+
+      //cout<<"rrrr"<<*it_right<<endl;
         
       int n_elements = it_right - it_left + 1; 
       average = std::accumulate(it_left, it_right + 1, 0.0f) / n_elements; 
