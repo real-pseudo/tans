@@ -16,7 +16,7 @@
 #include <vector>
 #include "TGraph.h"
 
-void graphs2() {
+void graphs() {
   
   //grafica
   //leggo ntuple
