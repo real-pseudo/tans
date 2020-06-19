@@ -12,11 +12,14 @@
 #include "particle.h"
 #include "hit.h"
 #include "Utility.h"
+#include <time.h>
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 100000
+#define NUMBER_OF_EVENTS 100
+
 
 void simulation() {
+	clock_t start=clock();
 	bool multScattering = true;
 	bool noise = true;
 	static Vertex point; //vertice che verrà generato
@@ -214,6 +217,8 @@ void simulation() {
 	// Close the file. 
 	hfile.Close();
 
+	clock_t end=clock();
+	cout<<"Simulation time: "<<((double)(end-start))<<endl;
 
 }
 
