@@ -66,7 +66,10 @@ void reconstruction() {
   int entries1 = 0, entries2 = 0;
   double deltaR=(det2.getRadius()- det1.getRadius());
   double deltaphi;
-  TH1D *z = new TH1D("z","istogramma ",91,-0.18,0.18);//istogramma zrec-zsim
+  double widthz = 0.001;
+  double extreme = 0.1;
+  double numbins = 2*extreme/widthz;
+  TH1D *z = new TH1D("z","istogramma ",numbins+1, -extreme-widthz/2, extreme+widthz/2);//istogramma zrec-zsim
   z->SetDirectory(0);
 
 
@@ -76,7 +79,7 @@ void reconstruction() {
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
     nt_sim->Fill(point.Z,point.mult);
-    //if(i%1000==0)
+    if(i%10000==0)
       cout<<"Ricostruisco evento "<<i<<endl;
 		#if DEBUG
     cout<<"Entries-hit1: "<<entries1<<endl;
@@ -134,13 +137,13 @@ void reconstruction() {
     #endif
     std::sort(recz.begin(),recz.end());
     
-    cout << "il mio vettore ha " << recz.size() << " elementi: ";
+    //cout << "il mio vettore ha " << recz.size() << " elementi: ";
     //Trovo il massimo
     bin_peak = trackZ->GetMaximumBin();
 		//Controllo se c'è più di un massimo
 		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
     //if(recz.size()>1 && twopeaks==false && (recz.size()>2 || abs(recz[0]-recz[1])<(2*width))){
-		if(recz.size()>1 && twopeaks==false ){
+		if(twopeaks==false ){
       double bin_center = trackZ->GetBinCenter(bin_peak);
       //cout << "centro del bin"<< bin_center <<endl;
       //media usando il vector  
@@ -178,13 +181,13 @@ void reconstruction() {
       #endif
     
     //#if DEBUG 
-    if(i%1000==0)
+    if(i%10000==0)
       cout << "vtx originale:"<< point.Z << " -- vtx ricostruito: "<< average << endl;
     //#endif
     
     //if(point.mult > 1)
-    z->Fill(average-point.Z);
-    nt_rec.Fill(point.Z, average,average-point.Z,point.mult);
+    z->Fill(point.Z-average);
+    nt_rec.Fill(point.Z, average,point.Z-average,point.mult);
   }
 
   else{

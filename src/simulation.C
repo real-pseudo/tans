@@ -14,7 +14,7 @@
 #include "Utility.h"
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 100000
+#define NUMBER_OF_EVENTS 1000000
 
 void simulation() {
 	bool multScattering = true;
@@ -73,7 +73,7 @@ void simulation() {
 
 		point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
 
-		if (i % 1000 == 0)
+		if (i % 10000 == 0)
 			cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl;
 
 		/*Conteggio delle interazioni con i rivelatori e con la beampipe*/
