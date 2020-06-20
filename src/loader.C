@@ -2,7 +2,7 @@
 #include <Riostream.h>
 #include <vector>
 #include <cstdlib>
-
+#include <time.h>
 void loader() {   
     std::vector<std::string> files {
         "geometry.cxx", 
@@ -16,8 +16,11 @@ void loader() {
         std::string command = ".L " + current_file + "+"; 
         gROOT->ProcessLine(command.c_str());
     }
-
+    
+    clock_t start=clock();
     gROOT->ProcessLine(".X simulation.C");
     gROOT->ProcessLine(".X reconstruction.C");
-    gROOT->ProcessLine(".X graphs1.C");
+    gROOT->ProcessLine(".X graphs.C");
+    clock_t end=clock();
+    	cout<<"Execution time: "<<((double)(end-start)/CLOCKS_PER_SEC)<<"sec"<<endl;
 }

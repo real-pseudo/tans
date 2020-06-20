@@ -12,11 +12,14 @@
 #include "particle.h"
 #include "hit.h"
 #include "Utility.h"
+#include <time.h>
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 1000000
+#define NUMBER_OF_EVENTS 1
+#define DEBUG 1
 
 void simulation() {
+	//clock_t start=clock();
 	bool multScattering = true;
 	bool noise = true;
 	static Vertex point; //vertice che verrà generato
@@ -73,8 +76,10 @@ void simulation() {
 
 		point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
 
-		if (i % 10000 == 0)
-			cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl;
+		//if (i % 100000 == 0)
+			cout << "Simulo evento #" << i << endl;
+			//cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl;
+
 
 		/*Conteggio delle interazioni con i rivelatori e con la beampipe*/
 		int count_hit1 = 0, count_hit2 = 0, count_bp = 0, count_det1 = 0;
@@ -85,13 +90,14 @@ void simulation() {
 			//Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction
 			Particella direction(*new(particles.array[j]) Particella(j));
 
-
-			/*cout  << "\nDirezione_Particella #" << direction.getLabel() <<
+			#if DEBUG
+			cout  << "\nDirezione_Particella #" << direction.getLabel() <<
 			"(event " << i << ") " <<
 			": phi = " << direction.getPhi() <<
 			"; theta = " << direction.getTheta() << endl;
+			#endif 
 		
-*/
+
 			
 			if(multScattering){
 				/*Considero l'interazione con la beampipe solo in caso di Multiple Scattering*/
@@ -214,6 +220,8 @@ void simulation() {
 	// Close the file. 
 	hfile.Close();
 
+	//clock_t end=clock();
+	//cout<<"Simulation time: "<<((double)(end-start)/CLOCKS_PER_SEC)<<endl;
 
 }
 

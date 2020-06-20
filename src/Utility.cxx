@@ -1,6 +1,6 @@
 #include "Utility.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 //___________________________________________________________________________
 //Genera la molteplicità delle particelle da una distribuzione data
@@ -44,8 +44,8 @@ void add_noise(hit& interact, const Cilindro& detector, double count_hit, Clones
 		double phi_noise=2*TMath::Pi()*(gRandom->Rndm());
 		interact.cartesian(detector,phi_noise,z_noise);
 		new(clonearray.array[k]) hit(interact);
-		}		
-	}
+	}		
+}
 
 bool more_peaks(TH1D* histo, const int nbin, const int peak){
 

@@ -66,12 +66,12 @@ void Particella::scattering(){
     double stheta = TMath::Sin(theta), ctheta = TMath::Cos(theta);
 
 	//angolo di scattering con distribuzione uniforme
-    double phi_0 = 2.*TMath::Pi()*(gRandom->Rndm()); 
-    
+    //double phi_0 = 2.*TMath::Pi()*(gRandom->Rndm()); 
+    double phi_0=0;
     double sphi_0 = TMath::Sin(phi_0), cphi_0 = TMath::Cos(phi_0);
 
 	//angolo di scattering con rms 1 mrad
-    double theta_0 = gRandom->Gaus(0.,0.001);
+    double theta_0 = gRandom->Gaus(0.,0.00000001);
     double stheta_0 = TMath::Sin(theta_0), ctheta_0 = TMath::Cos(phi_0);;
  //   cout<<"theta0 :  "<<theta_0<< "phi0:" << phi_0 <<endl;
     //matrice di rotazione
@@ -95,7 +95,13 @@ void Particella::scattering(){
 
 	//nuove direzioni in seguito allo scattering
     theta = TMath::ACos(uz);
-    phi = TMath::ATan2(uy,ux);
+    phi = TMath::ATan(uy/ux);
+	 
+	if(ux<0.)
+		phi+=TMath::Pi();
+	else if(ux>0 && uy<0)
+		phi+=2. *TMath::Pi();
+	
 
 }
 
