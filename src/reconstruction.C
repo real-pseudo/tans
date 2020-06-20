@@ -79,7 +79,7 @@ void reconstruction() {
     entries1=hit_det1.ptr->GetEntries();
     entries2=hit_det2.ptr->GetEntries();
     nt_sim->Fill(point.Z,point.mult);
-    if(i%100000==0)
+    if(i%10000==0)
       cout<<"Ricostruisco evento "<<i<<endl;
 		#if DEBUG
     cout<<"Entries-hit1: "<<entries1<<endl;

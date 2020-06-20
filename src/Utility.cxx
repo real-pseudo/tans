@@ -1,6 +1,6 @@
 #include "Utility.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 //___________________________________________________________________________
 //Genera la molteplicità delle particelle da una distribuzione data
@@ -23,7 +23,7 @@ int getMultiplicity(){
 
 void smearing(hit& interaction, const Cilindro& c){
 	//Dati-variabili utile a valutare lo smearing(descrive la risposta del rivelatore)
-	double delta_z = 0.00012;//120micrometri in cm
+	double delta_z = 0.012;//120micrometri in cm
 	double deltaphidet = DELTAS/(c.getRadius());//0.003 è deltaS
 
 	double z_smear = 0;

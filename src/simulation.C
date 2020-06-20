@@ -15,8 +15,8 @@
 #include <time.h>
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 1
-#define DEBUG 1
+#define NUMBER_OF_EVENTS 100000
+#define DEBUG 0
 
 void simulation() {
 	//clock_t start=clock();
@@ -76,7 +76,7 @@ void simulation() {
 
 		point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
 
-		//if (i % 100000 == 0)
+		if (i % 10000 == 0)
 			cout << "Simulo evento #" << i << endl;
 			//cout << "Simulo evento #" << i << " con molteplicità = " << point.mult << endl;
 
@@ -111,7 +111,7 @@ void simulation() {
 					//crea particella che è copia di direction e la salva nell'array
 					new(scatter_bp.array[count_bp]) Particella(direction);
 					#if DEBUG
-					cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
+					//cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
 					#endif
 
 					count_bp++;
@@ -137,7 +137,7 @@ void simulation() {
 						new(hit_det1.array[count_hit1]) hit(hits1) ;
 						count_hit1++;
 						#if DEBUG
-						cout << "newtheta:" << direction.getTheta() << "\nnewPhi:" <<direction.getPhi() <<endl;
+						cout << "newtheta smear:" << direction.getTheta() << "\nnewPhi smear:" <<direction.getPhi() <<endl;
 						#endif
 
 						hits2.traject_intersection(vtx_hit, det2, direction);
