@@ -95,9 +95,15 @@ void Particella::scattering(){
 
 	//nuove direzioni in seguito allo scattering
     theta = TMath::ACos(uz);
-    phi = TMath::ATan(uy/ux);
+
+    if(uy<=0.){
+        	phi = TMath::ATan2(uy,ux)+2.*TMath::Pi();
+        }
+        else{
+        phi = TMath::ATan2(uy,ux);
+        }
 	 
-	if(ux<0.)
+	/*if(ux<0.)
 		phi+=TMath::Pi();
 	else if(ux>0 && uy<0)
 		phi+=2. *TMath::Pi();
@@ -113,7 +119,7 @@ void Particella::scattering(){
 		else if(uy<0)
 			phi=2.*TMath::Pi();
 	}
-	
+	*/
 	
 
 }

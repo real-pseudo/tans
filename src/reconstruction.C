@@ -143,6 +143,7 @@ void reconstruction() {
 		//Controllo se c'è più di un massimo
 		bool twopeaks = more_peaks(trackZ, nbin, bin_peak);
     //if(recz.size()>1 && twopeaks==false && (recz.size()>2 || abs(recz[0]-recz[1])<(2*width))){
+	//FORSE POSSIAMO USARE QUESTA COND if(recz.size()>1 && twopeaks==false ){ CHIEDERE MASERA
 		if(twopeaks==false ){
       double bin_center = trackZ->GetBinCenter(bin_peak);
       //cout << "centro del bin"<< bin_center <<endl;

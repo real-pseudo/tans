@@ -63,6 +63,17 @@ void hit::PrintStatus() const {
 	
 }
 
+double hit::getPhi() const{
+	double phi_angle;
+	if(fY<=0.){
+		phi_angle=2.*TMath::Pi()+atan2(fY,fX);
+	}
+	else{
+		phi_angle=atan2(fY,fX);
+	}
+	return phi_angle;
+}
+
 
 
 bool hit::acceptance(const Cilindro& c) const {
