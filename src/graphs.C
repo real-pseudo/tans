@@ -45,7 +45,7 @@ void graphs() {
   double zrange[Z] = {-17.0,-13.0,-9.0,-5.0,-3.0,-1.0,1.0,3.0,5.0,9.0,13.0,17.0};
   double resrz[Z-1] = {0.} ;
   double resrz_error[Z-1] = {0.} ;
-  double zsimul[Z-1] = {0.} , eff_z[Z-1] = {0.};
+  double zsimul[Z-1] = {0.} , eff_z[Z-1] = {0.} , effz_err[Z-1]={0.};
   for(int k=0;k<Z-1;k++){
 	   double countsim_effz = 0. , countrec_effz = 0. ;
 	   for(int m=0;m<nrec;m++){
@@ -63,18 +63,19 @@ void graphs() {
 	   }
 	   resrz[k] =10*(resolution->GetRMS());
 	   resrz_error[k] =10*resolution->GetRMSError();
+	   resolution->Reset();
 	   zsimul[k] = (zrange[k] + zrange[k+1])/2.;
 	   if(countsim_effz != 0){
 		   eff_z[k]=((double)countrec_effz)/countsim_effz;
+		   effz_err[k]=sqrt(eff_z[k]*(1-eff_z[k])/countsim_effz);
 	   }
-  resolution->Reset();
 }
 
   //Valutazione della risoluzione e dell'efficienza in funzione della molteplicità
   TH1D *eff = new TH1D("eff","Efficienza",55,0.5,55.5);
   eff->SetDirectory(0);
   double efficiency[M]={0.} , eff_mz[M]={0.} , resrm[M] = {0.} , resrm_error[M] = {0.};
-  double mult_eff[M]={0.} , mult_effz[M]={0.} , mult_res[M]={0.} ;
+  double mult_eff[M]={0.} , mult_effz[M]={0.} , mult_res[M]={0.} , multeff_err[M]={0.} , multeff_errz[M]={0.} ;
   TH1D *resmult = new TH1D("resmult","risolmul",201,-0.5,0.5);
   resmult->SetDirectory(0);
 
@@ -101,17 +102,21 @@ void graphs() {
 		  	  	 }
 		  	 }
 	  	  }
-
+	  //EFFICINZA VS MOLTEPLICITÀ
+	  if(count_sim!=0){
+	 	  mult_eff[range-1]=range;
+	 	  //cout<< "molteplicita" << mult_eff[range-1]<<endl;
+	 	   efficiency[range-1]= ((double) count_rec) / count_sim;
+	 	   multeff_err[range-1]=sqrt(efficiency[range-1]*(1-efficiency[range-1])/count_sim);
+	 	  	  eff->Fill(mult_eff[range-1],efficiency[range-1]);
+	 	  }
+	  //EFFICINZA VS MOLTEPLICITÀ (Z<SIGMA)
 	  if(count_sigmatot!=0 ){
 		  mult_effz[range-1]=range;
 		  eff_mz[range-1]=count_sigma/count_sigmatot;
+		  multeff_errz[range-1]=sqrt(eff_mz[range-1]*(1-eff_mz[range-1])/count_sigmatot);
 	  }
-	  if(count_sim!=0){
-	  	  mult_eff[range-1]=range;
-	  	  //cout<< "molteplicita" << mult_eff[range-1]<<endl;
-	  	  efficiency[range-1]= ((double) count_rec) / count_sim;
-	  	  eff->Fill(mult_eff[range-1],efficiency[range-1]);
-	  }
+
 	  mult_res[range-1]=range;
 	  resrm[range-1] = 100*resmult->GetRMS();
 	  resrm_error[range-1] = 100*resmult->GetRMSError();
@@ -122,7 +127,7 @@ void graphs() {
   eff->Draw("hist");
 
   new TCanvas("Graph1","Efficiency vs Multiplicity",200,10,800,500);
-  TGraph *gr1=new TGraph(51,mult_eff,efficiency);
+  TGraphErrors *gr1=new TGraphErrors(51,mult_eff,efficiency,0,multeff_err);
   gr1->SetTitle("Efficiency Vs Multiplicity");
   gr1->GetXaxis()->SetTitle("Multiplicity");
   gr1->GetYaxis()->SetTitle("Efficiency");
@@ -137,7 +142,7 @@ void graphs() {
   grrz->Draw("AP*");
 
   new TCanvas("Graph3","Efficiency vs Z",200,10,800,500);
-  TGraph *gr3=new TGraph(11,zsimul,eff_z);
+  TGraphErrors *gr3=new TGraphErrors(11,zsimul,eff_z,0,effz_err);
   gr3->SetTitle("Efficiency vs Simulated Z");
   gr3->GetXaxis()->SetTitle("Simulated Z [cm]");
   gr3->GetYaxis()->SetTitle("Efficiency");
@@ -152,7 +157,7 @@ void graphs() {
   grrm->Draw("AP*");
 
    new TCanvas("Graph5","Efficiency Vs Multiplicity(Z < sigma)",200,10,800,500);
-   TGraph *gr5=new TGraph(51,mult_effz,eff_mz);
+   TGraphErrors *gr5=new TGraphErrors(51,mult_effz,eff_mz,0,multeff_errz);
    gr5->SetTitle("Efficiency Vs Multiplicity(Z < sigma)");
    gr5->GetXaxis()->SetTitle("Multiplicity");
    gr5->GetYaxis()->SetTitle("Efficiency");
