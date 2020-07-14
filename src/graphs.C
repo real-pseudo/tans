@@ -17,7 +17,8 @@
 #include "TGraph.h"
 
 #define M 52
-#define Z 12
+#define Z 16
+#define ZS 12
 #define Nsigma 1
 void graphs() {
 
@@ -45,51 +46,79 @@ void graphs() {
   resolution->SetDirectory(0);
   TH1D *resolz_3sigma = new TH1D("ris","risol",201,-0.5,0.5);
     resolz_3sigma->SetDirectory(0);
-  double zrange[Z] = {-17.0,-13.0,-9.0,-5.0,-3.0,-1.0,1.0,3.0,5.0,9.0,13.0,17.0};
-  double resrz[Z-1] = {0.} , resrz_3sigma[Z-1] = {0.} ;
-  double resrz_error[Z-1] = {0.} , resrz_error_3sigma[Z-1] = {0.} ;
-  double zsimul[Z-1] = {0.} , eff_z[Z-1] = {0.} , effz_err[Z-1]={0.} , eff_z_3sigma[Z-1] = {0.} , effz_err_3sigma[Z-1]={0.};
+  double zrange[Z] = {-20.0,-19.0,-15.0,-13.0,-9.0,-5.0,-3.0,-1.0,1.0,3.0,5.0,9.0,13.0,15.0,19.0,20.0};
+  double zrange_3sigma[ZS] = {-17.0,-13.0,-9.0,-5.0,-3.0,-1.0,1.0,3.0,5.0,9.0,13.0,17.0};
+  double resrz[Z-1] = {0.} , resrz_3sigma[ZS-1] = {0.} ;
+  double resrz_error[Z-1] = {0.} , resrz_error_3sigma[ZS-1] = {0.} ;
+  double zsimul[Z-1] = {0.} , zsimul_3sigma[ZS-1] = {0.} , eff_z[Z-1] = {0.} , effz_err[Z-1]={0.} , eff_z_3sigma[ZS-1] = {0.} , effz_err_3sigma[ZS-1]={0.};
   for(int k=0;k<Z-1;k++){
-	   double countsim_effz = 0. , countrec_effz = 0. , countrec_effz_3sigma = 0. ,countsim_effz_3sigma = 0. ;
+	   double countsim_effz = 0. , countrec_effz = 0. ;
 	   for(int m=0;m<nrec;m++){
 		   reconstr->GetEvent(m);
 		   if((rec_sim>=zrange[k])&&(rec_sim<zrange[k+1])){
 			   resolution->Fill(rec_sim-rec_z);
 			   countrec_effz++;
 
-			   if(abs(rec_sim)< (3.*sigma_z)){
+			   /*if(abs(rec_sim)<= (3*sigma_z)){
 				   resolz_3sigma->Fill(rec_sim-rec_z);
 				   countrec_effz_3sigma++;
-			   }
+			   }*/
 		   }
 	   }
 	   for(int l=0;l<nsim;l++){
 		   simulat->GetEvent(l);
 		   if((sim_z >= zrange[k]) && (sim_z < zrange[k+1])){
 			   countsim_effz++;
-			   if(abs(sim_z) < (3.*sigma_z)){
+			   /*if(abs(sim_z) <= (3*sigma_z)){
 				   countsim_effz_3sigma++;
-			   }
+			   }*/
 	   	  	}
 	   }
 	   zsimul[k] = (zrange[k] + zrange[k+1])/2.;
+	   //zsimul_3sigma[k] = (zrange_3sigma[k] + zrange_3sigma[k+1])/2.;
+
 	   //EFFICIENZA VS Z
 	   if(countsim_effz != 0){
 	   		   eff_z[k]=((double)countrec_effz)/countsim_effz;
 	   		   effz_err[k]=sqrt(eff_z[k]*(1-eff_z[k])/countsim_effz);
 	   	   }
-	   //EFFICIENZA VS Z (Z<3SIGMA)
+	   //RISOLUZIONE VS Z
+	   	   resrz[k] =1000*(resolution->GetRMS());
+	   	   resrz_error[k] =1000*resolution->GetRMSError();
+	   	   resolution->Reset();
+  }
+
+	 //EFFICIENZA VS Z (Z<3SIGMA)
+	   for(int k=0;k<ZS-1;k++){
+	   	   double countrec_effz_3sigma = 0. ,countsim_effz_3sigma = 0. ;
+	   	   for(int m=0;m<nrec;m++){
+	   		   reconstr->GetEvent(m);
+	   		   if((rec_sim>=zrange_3sigma[k])&&(rec_sim<zrange_3sigma[k+1])){
+	   			   if(abs(rec_sim)<= (3*sigma_z)){
+	   				   resolz_3sigma->Fill(rec_sim-rec_z);
+	   				   countrec_effz_3sigma++;
+	   			   }
+	   		   }
+	   	   }
+	   	   for(int l=0;l<nsim;l++){
+	   		   simulat->GetEvent(l);
+	   		   if((sim_z >= zrange_3sigma[k]) && (sim_z < zrange_3sigma[k+1])){
+	   			   if(abs(sim_z) <= (3*sigma_z)){
+	   				   countsim_effz_3sigma++;
+	   			   }
+	   	   	  	}
+	   	   }
+
+	   	   zsimul_3sigma[k] = (zrange_3sigma[k] + zrange_3sigma[k+1])/2.;
+
 	   	   if(countsim_effz_3sigma != 0){
 	   	   		   eff_z_3sigma[k]=((double)countrec_effz_3sigma)/countsim_effz_3sigma;
 	   	   		   effz_err_3sigma[k]=sqrt(eff_z[k]*(1-eff_z[k])/countsim_effz_3sigma);
 	   	   	   }
-	   //RISOLUZIONE VS Z
-	   resrz[k] =10*(resolution->GetRMS());
-	   resrz_error[k] =10*resolution->GetRMSError();
-	   resolution->Reset();
+
 	   //RISOLUZIONE VS Z (Z<3SIGMA)
-	   resrz_3sigma[k] =10*(resolz_3sigma->GetRMS());
-	   resrz_error_3sigma[k] =10*resolz_3sigma->GetRMSError();
+	   resrz_3sigma[k] =1000*(resolz_3sigma->GetRMS());
+	   resrz_error_3sigma[k] =1000*resolz_3sigma->GetRMSError();
 	   resolz_3sigma->Reset();
 
 
@@ -141,7 +170,7 @@ void graphs() {
 	 	   multeff_err[range-1]=sqrt(efficiency[range-1]*(1-efficiency[range-1])/count_sim_sigma);
 	 	   eff->Fill(mult_eff[range-1],efficiency[range-1]);
 	 	  }
-	  //EFFICINZA VS MOLTEPLICITÀ (Z<3SIGMA)
+	  //EFFICIENZA VS MOLTEPLICITÀ (Z<3SIGMA)
 	  if(count_sim_3sigma!=0 ){
 		  mult_effz[range-1]=range;
 		  eff_mz[range-1]=count_rec_3sigma/count_sim_3sigma;
@@ -167,36 +196,41 @@ void graphs() {
   gr1->SetTitle("Efficiency Vs Multiplicity (Z < sigma)");
   gr1->GetXaxis()->SetTitle("Multiplicity");
   gr1->GetYaxis()->SetTitle("Efficiency");
+  gr1->SetMarkerColor(4);
   gr1->Draw("AP*");
 
 
   new TCanvas("Graph2","Resolution vs Z",200,10,800,500);
-  TGraphErrors *grrz = new TGraphErrors(11,zsimul,resrz,0,resrz_error);
+  TGraphErrors *grrz = new TGraphErrors(15,zsimul,resrz,0,resrz_error);
   grrz->SetTitle("Resolution vs Simulated Z");
   grrz->GetXaxis()->SetTitle("Simulated Z [cm]");
   grrz->GetYaxis()->SetTitle("Resolution ");
-  grrz->Draw("AP*");
+  grrz->SetMarkerColor(4);
+  grrz->Draw("A*L");
 
   new TCanvas("Graph3","Resolution vs Z (Z < 3sigma)",200,10,800,500);
-   TGraphErrors *grrz_3sigma = new TGraphErrors(11,zsimul,resrz_3sigma,0,resrz_error_3sigma);
+   TGraphErrors *grrz_3sigma = new TGraphErrors(11,zsimul_3sigma,resrz_3sigma,0,resrz_error_3sigma);
    grrz_3sigma->SetTitle("Resolution vs Simulated Z (Z < 3sigma)");
    grrz_3sigma->GetXaxis()->SetTitle("Simulated Z [cm]");
    grrz_3sigma->GetYaxis()->SetTitle("Resolution ");
-   grrz_3sigma->Draw("AP*");
+   grrz_3sigma->SetMarkerColor(4);
+   grrz_3sigma->Draw("A*L");
 
   new TCanvas("Graph4","Efficiency vs Z",200,10,800,500);
-  TGraphErrors *gr4=new TGraphErrors(11,zsimul,eff_z,0,effz_err);
+  TGraphErrors *gr4=new TGraphErrors(15,zsimul,eff_z,0,effz_err);
   gr4->SetTitle("Efficiency vs Simulated Z");
   gr4->GetXaxis()->SetTitle("Simulated Z [cm]");
   gr4->GetYaxis()->SetTitle("Efficiency");
-  gr4->Draw("AP*");
+  gr4->SetMarkerColor(4);
+  gr4->Draw("A*L");
 
   new TCanvas("Graph5","Efficiency vs Z (Z < 3sigma)",200,10,800,500);
-    TGraphErrors *gr5=new TGraphErrors(11,zsimul,eff_z_3sigma,0,effz_err_3sigma);
+    TGraphErrors *gr5=new TGraphErrors(11,zsimul_3sigma,eff_z_3sigma,0,effz_err_3sigma);
     gr5->SetTitle("Efficiency vs Simulated Z (Z < 3sigma)");
     gr5->GetXaxis()->SetTitle("Simulated Z [cm]");
     gr5->GetYaxis()->SetTitle("Efficiency");
-    gr5->Draw("AP*");
+    gr5->SetMarkerColor(4);
+    gr5->Draw("A*L");
 
 
   new TCanvas("Graph6","Resolution Vs Multiplicity (Z < sigma)",200,10,800,500);

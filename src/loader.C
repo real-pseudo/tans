@@ -19,8 +19,8 @@ void loader() {
     
     clock_t start=clock();
     gROOT->ProcessLine(".X simulation.C");
-    gROOT->ProcessLine(".X reconstruction.C");
-    gROOT->ProcessLine(".X graphs.C");
+    //gROOT->ProcessLine(".X reconstruction.C");
+    //gROOT->ProcessLine(".X graphs.C");
     clock_t end=clock();
     	cout<<"Execution time: "<<((double)(end-start)/CLOCKS_PER_SEC)<<"sec"<<endl;
 }

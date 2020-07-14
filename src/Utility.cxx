@@ -4,13 +4,13 @@
 
 //___________________________________________________________________________
 //Genera la molteplicità delle particelle da una distribuzione data
-int getMultiplicity(){
-	TFile F("kinem.root");
-  	TH1F *dismult = (TH1F*) F.Get("hmul");
+int getMultiplicity(TFile *F, const char *molt_histogram){
+	//TFile F("kinem.root");
+  	TH1F *dismult = (TH1F*) F->Get(molt_histogram);
   	dismult->SetDirectory(0);
   	dismult->SetMinimum(0);
 	int mult = (int) dismult->GetRandom();
-	F.Close();
+	//F.Close();
 	delete dismult;
 	return mult;
 }

@@ -15,7 +15,7 @@
 #include <time.h>
 
 #define ARRAY_SIZE 100
-#define NUMBER_OF_EVENTS 100000
+#define NUMBER_OF_EVENTS 500000
 #define DEBUG 0
 
 void simulation() {
@@ -24,7 +24,7 @@ void simulation() {
 	bool noise = true;
 	static Vertex point; //vertice che verrà generato
 	
-	
+	TFile *A=new TFile("kinem.root");
 	//numero di conteggi per ciascun cilindro
 	hit		hits1(0, 0, 0), 
 			hits2(0, 0, 0),
@@ -46,19 +46,27 @@ void simulation() {
 
 	TTree *tree = new TTree("Tree", ("TTree con " + n + " branches").c_str()); //puntatore ad un oggetto ttree
 
-	ClonesArray particles("Particella", ARRAY_SIZE); 
-	ClonesArray hit_det1("hit", ARRAY_SIZE);
-	ClonesArray hit_det2("hit", ARRAY_SIZE);
+	/*ClonesArray *particles = new ClonesArray("Particella", ARRAY_SIZE);
+	ClonesArray *hit_det1 = new ClonesArray("hit", ARRAY_SIZE);
+	ClonesArray *hit_det2 = new ClonesArray("hit", ARRAY_SIZE);
 	//Utili solo in caso di Multiple Scattering
 
-	ClonesArray scatter_det1("Particella", ARRAY_SIZE);
-	ClonesArray scatter_bp("Particella", ARRAY_SIZE);
+	ClonesArray *scatter_det1 = new ClonesArray("Particella", ARRAY_SIZE);
+	ClonesArray *scatter_bp= new ClonesArray("Particella", ARRAY_SIZE);
+*/
+	ClonesArray particles("Particella", ARRAY_SIZE);
+		ClonesArray hit_det1("hit", ARRAY_SIZE);
+		ClonesArray hit_det2("hit", ARRAY_SIZE);
+		//Utili solo in caso di Multiple Scattering
+
+		ClonesArray scatter_det1 ("Particella", ARRAY_SIZE);
+		ClonesArray scatter_bp("Particella", ARRAY_SIZE);
 
 	// Dichiarazione dei branch del TTree ____________________________________________________________________
 	tree->Branch("VertMult", &point.X, "X/D:Y:Z:mult/I");
 	tree->Branch("DirParticella", &particles.ptr);//devo fare .ptr perchè devo accedere al ptr nella classe
 	tree->Branch("hit1", &hit_det1.ptr);
-	tree->Branch("hit2", &hit_det2.ptr);  
+	tree->Branch("hit2", &hit_det2.ptr);
 
 	if(multScattering){ 
 		tree->Branch("scattering_bp", &scatter_bp.ptr);
@@ -74,7 +82,7 @@ void simulation() {
 		point.Y = gRandom->Gaus(0, 0.01);
 		point.Z = gRandom->Gaus(0, 5.3);
 
-		point.mult = getMultiplicity(); //molteplicità dell'evento, generata dalla distribuzione data
+		point.mult = getMultiplicity(A,"hmul"); //molteplicità dell'evento, generata dalla distribuzione data
 
 		if (i % 10000 == 0)
 			cout << "Simulo evento #" << i << endl;
@@ -88,7 +96,7 @@ void simulation() {
 		for(int j = 0; j < point.mult; j++) {
 			Vertex vtx_hit = point;
 			//Metto nell'array particles, la particella j-esima e mi creo una copia di essa in direction
-			Particella direction(*new(particles.array[j]) Particella(j));
+			Particella direction(*new(particles.array[j]) Particella(j,A));
 
 			#if DEBUG
 			cout  << "\nDirezione_Particella #" << direction.getLabel() <<
@@ -203,8 +211,8 @@ void simulation() {
 //cout<< "evento: "<< i<<endl;
 		tree->Fill();
 
-		particles.clear(); 
-		hit_det1.clear(); 
+		particles.clear();
+		hit_det1.clear();
 		hit_det2.clear();
 		if(multScattering) {
 			scatter_bp.clear();
@@ -219,7 +227,7 @@ void simulation() {
 
 	// Close the file. 
 	hfile.Close();
-
+	A->Close();
 	//clock_t end=clock();
 	//cout<<"Simulation time: "<<((double)(end-start)/CLOCKS_PER_SEC)<<endl;
 

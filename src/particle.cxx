@@ -16,10 +16,10 @@ Particella::Particella() : TObject(),
    // default constructor
  }
 
-Particella::Particella(int label) : TObject(),
+Particella::Particella(int label, TFile *P) : TObject(),
 	pLabel(label){
 	setPhi();
-	setTheta();
+	setTheta(P);
 }
 
 
@@ -34,9 +34,9 @@ Particella::~Particella()
 }
 
 //Genera gli angoli di emissione theta da distribuzione di pseudorapidità
-void Particella::setTheta(){
-	TFile F("kinem.root"); 
-	TH1F *disheta = (TH1F*)F.Get("heta");
+void Particella::setTheta(TFile *F){
+	//TFile F("kinem.root");
+	TH1F *disheta = (TH1F*)F->Get("heta");
   	disheta->SetDirectory(0);
   	disheta->SetMinimum(0);
 	
@@ -46,8 +46,9 @@ void Particella::setTheta(){
 	theta = 2.*TMath::ATan(TMath::Exp(-hetaval));
 	//cout<<"angolo heta: "<<thetaval<<endl;
 
-	F.Close();
+	//F.Close();
 	//hc->Close();
+	delete hc;
 	delete disheta;
 	//return theta;
 }

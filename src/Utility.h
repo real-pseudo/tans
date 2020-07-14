@@ -32,7 +32,7 @@ public:
 	}
 }; 
 
-int getMultiplicity();
+int getMultiplicity(TFile *F, const char *molt_histogram);
 void smearing(hit& interaction, const Cilindro& c);
 void add_noise(hit& interact, const Cilindro& detector, double count_hit, ClonesArray& clonearray);
 bool more_peaks(TH1D* histo, const int nbin, const int peak);
