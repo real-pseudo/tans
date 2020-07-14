@@ -1,7 +1,7 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 #define DELTAS 0.003
-#define NOISE 10
+#define NOISE 0
 
 #include <Riostream.h>
 #include "TClonesArray.h"
@@ -34,7 +34,7 @@ public:
 
 int getMultiplicity(TFile *F, const char *molt_histogram);
 void smearing(hit& interaction, const Cilindro& c);
-void add_noise(hit& interact, const Cilindro& detector, double count_hit, ClonesArray& clonearray);
+void add_noise(int pt_noise, hit& interact, const Cilindro& detector, double count_hit, ClonesArray& clonearray);
 bool more_peaks(TH1D* histo, const int nbin, const int peak);
 
 

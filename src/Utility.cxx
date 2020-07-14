@@ -38,8 +38,8 @@ void smearing(hit& interaction, const Cilindro& c){
 }
 
 //Si estrae z e phi da una distribuzione uniforme,si passa in cartesiane e si riempe HIT come al solito
-void add_noise(hit& interact, const Cilindro& detector, double count_hit, ClonesArray& clonearray){
-	for(int k=count_hit; k<count_hit+NOISE; k++){
+void add_noise(int pt_noise, hit& interact, const Cilindro& detector, double count_hit, ClonesArray& clonearray){
+	for(int k=count_hit; k<count_hit+pt_noise; k++){
 		double z_noise=detector.getLenght()*(gRandom->Rndm()) - detector.getLenght()/2; //metto - L/2 perchè noi ragioniamo nell'accettanza
 		double phi_noise=2*TMath::Pi()*(gRandom->Rndm());
 		interact.cartesian(detector,phi_noise,z_noise);
